@@ -52,8 +52,8 @@ class Position {
 
     // 0 for white to move, 1 for black to move
     bool turn;
-    // map of 'K', 'Q', 'k', 'q' to bool
-    std::map<char, bool> castleRights;
+    // bitmask of 4 bits e.g. 1101 corresponds to KQq
+    int castleRights;
     // stores the square of en passent, if available
     std::string enPassent;
     // number of half moves since last pawn move or capture
@@ -63,7 +63,7 @@ class Position {
 
  private:
     bool Oturn;
-    std::map<char, bool> OcastleRights;
+    int OcastleRights;
     std::string OenPassent;
     int OhalfMove;
     int OfullMove;

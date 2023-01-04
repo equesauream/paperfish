@@ -9,7 +9,8 @@
 using namespace engine;
 
 int main () {
-  Board b;
+  //Board b;
+  Board b("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
   std::cout << b.current << '\n';
   //std::cout << b.current.castleRights.at('k');

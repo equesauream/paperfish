@@ -81,15 +81,14 @@ Position::Position(const std::string& FEN) {
 
     // Castling Rights //
 
-    castleRights = std::map<char, bool>{
-        std::pair<char, bool>('K', false),
-        std::pair<char, bool>('Q', false),
-        std::pair<char, bool>('k', false),
-        std::pair<char, bool>('q', false)};
+    castleRights = 0;
 
     for (auto& c : castle) {
         if (c == '-') break;
-        castleRights.at(c) = true;
+        if (c == 'K') castleRights += 1 << 3;
+        if (c == 'Q') castleRights += 1 << 2;
+        if (c == 'k') castleRights += 1 << 1;
+        if (c == 'q') castleRights += 1;
     }
 
 
@@ -236,14 +235,15 @@ std::string Position::toFEN() const {
 
     // castling rights
     tmp += " ";
-    if (castleRights.at('K') == false &&
-        castleRights.at('Q') == false &&
-        castleRights.at('k') == false &&
-        castleRights.at('q') == false) tmp += "-";
+    if (castleRights == 0) tmp += "-";
     else {
-        for (auto& i : castleRights) {
-            if (i.second == false) continue;
-            tmp += i.first;
+        for (int i = 0; i < 4; ++i) {
+            if (castleRights & (1 << 3)) {
+                if (i == 0) tmp += "K";
+                if (i == 1) tmp += "Q";
+                if (i == 2) tmp += "k";
+                if (i == 3) tmp += "q";
+            }
         }
     }
 
@@ -398,11 +398,11 @@ bool Position::isValidMove(const std::string& s, char piece, char orig) {
             king = "e1";
             kpos = dest;
             if (kpos == "g1") {
-                if (!castleRights.at('K')) return false;
+                if ((castleRights & (1 << 3)) == 0) return false;
                 rook = "h1";
                 rpos = "f1";
             } else if (kpos == "c1") {
-                if (!castleRights.at('Q')) return false;
+                if ((castleRights & (1 << 2)) == 0) return false;
                 rook = "a1";
                 rpos = "d1";
             } else {
@@ -452,11 +452,11 @@ bool Position::isValidMove(const std::string& s, char piece, char orig) {
             king = "e8";
             kpos = dest;
             if (kpos == "g8") {
-                if (!castleRights.at('k')) return false;
+                if ((castleRights & (1 << 1)) == 0) return false;
                 rook = "h8";
                 rpos = "f8";
             } else if (kpos == "c8") {
-                if (!castleRights.at('q')) return false;
+                if ((castleRights & (1 << 0)) == 0) return false;
                 rook = "a8";
                 rpos = "d8";
             } else {
@@ -782,11 +782,11 @@ std::vector<std::string> Position::possibleMoves(char p, const std::string& pos)
             }
         }
         if (toupper(p) == p) {
-            if (castleRights.at('K')) cpy.push_back("e1g1");
-            if (castleRights.at('Q')) cpy.push_back("e1c1");
+            if (castleRights & (1 << 3)) cpy.push_back("e1g1");
+            if (castleRights & (1 << 2)) cpy.push_back("e1c1");
         } else if (tolower(p) == p) {
-            if (castleRights.at('k')) cpy.push_back("e8g8");
-            if (castleRights.at('q')) cpy.push_back("e8c8");
+            if (castleRights & (1 << 1)) cpy.push_back("e8g8");
+            if (castleRights & (1 << 0)) cpy.push_back("e8c8");
         }
         return cpy;
         
@@ -889,9 +889,9 @@ void Position::move(Move m) {
 
     turn = !turn;
     enPassent = m.enPassentSquare;
-    for (auto& i : m.castleRights) {
-        if (i.second == false) {
-            castleRights.at(i.first) = i.second;
+    for (int i = 0; i < 4; ++i) {
+        if ((m.castleRights & (1 << i)) == 0) {
+            castleRights &= ~(1 << i);
         }
     }
 

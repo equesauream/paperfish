@@ -15,8 +15,8 @@ class Move {
     std::string dest;    
     char piece;
 
-    // maps 'K','Q', 'k', 'q' to T/F
-    std::map<char, bool> castleRights; // true for enabled
+    // bitmask of 4 bits e.g. 1101 for KQq
+    int castleRights; // true for enabled
     // enabled if a pawn takes a double step, `-` if not
     std::string enPassentSquare;
     char promotionPiece = '-';
