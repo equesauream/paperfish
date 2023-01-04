@@ -6,14 +6,14 @@ namespace engine {
 
 Board::Board() {}
 
-Board::Board(const std::string FEN) {
+Board::Board(const std::string& FEN) {
     current = Position(FEN);
     history = std::vector<Position>();
 }
 
 Board::~Board() {}
 
-void Board::move(Move m) {
+void Board::move(const Move& m) {
     history.push_back(current); 
     Position newBoard = current;
     newBoard.move(m);

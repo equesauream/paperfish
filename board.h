@@ -16,10 +16,10 @@ class Board {
     std::vector<Position> history;
   public:
     Board();
-    Board(const std::string FEN);
+    Board(const std::string& FEN);
     ~Board();
 
-    void move(Move m);
+    void move(const Move& m);
     void unmove();
 
     int perft(int n);

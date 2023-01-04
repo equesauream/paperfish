@@ -1,5 +1,4 @@
-CXX = g++-8
-CXXFLAGS = -std=c++14 -Wall -MMD -g -Ofast -flto -O3
+CXXFLAGS = -std=c++14 -Wall -MMD -Wextra -pedantic -g -Ofast -flto
 OBJECTS = position.o move.o board.o
 DEPENDS = ${OBJECTS:.o=.d}
 
