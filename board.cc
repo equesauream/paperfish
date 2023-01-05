@@ -34,7 +34,7 @@ int Board::perft(int n) {
                 (i >= 6 && current.turn == false)) continue;
             for (auto& square : current.bbToSquares(current.thePosition.at(i))) {
                 for (auto& j : current.validMoves(Position::intMap.at(i), square)) {
-                    move(Move(j, Position::intMap.at(i)));
+                    move(j);
                     //std::cout << current << '\n';
                     unmove();
                 }
@@ -49,7 +49,7 @@ int Board::perft(int n) {
                 (i >= 6 && current.turn == false)) continue;
             for (auto& square : current.bbToSquares(current.thePosition.at(i))) {
                 for (auto& m : current.validMoves(Position::intMap.at(i), square)) {
-                    move(Move(m, Position::intMap.at(i)));
+                    move(m);
                     sum += perft(n - 1);
                     unmove();
                 }
@@ -61,7 +61,8 @@ int Board::perft(int n) {
 
 void Board::perftDivide(int n) {
     if (n == 1) {
-        for (auto& i : current.legalMoves()) {
+        const auto& x = current.legalMoves();
+        for (auto& i : x) {
             std::cout << i << '\n';
         }
         return;
@@ -71,7 +72,7 @@ void Board::perftDivide(int n) {
             (i >= 6 && current.turn == false)) continue;
         for (auto& square : current.bbToSquares(current.thePosition.at(i))) {
             for (auto& m : current.validMoves(Position::intMap.at(i), square)) {
-                move(Move(m, Position::intMap.at(i)));
+                move(m);
                 std::cout << m << " " << perft(n - 1) << '\n';
                 unmove();
             }

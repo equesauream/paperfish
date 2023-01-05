@@ -9,7 +9,8 @@
 
 #include "move.h"
 
-typedef unsigned long long U64;
+using U64 = unsigned long long;
+using Square = long long unsigned;
 /*
 
 top left = first bit
@@ -37,6 +38,7 @@ class Position {
   public:
     // the first 12 bitmaps (index 0-11) are the positions of the pieces in the standard order above
     std::vector<U64> thePosition;
+    // whitePieces is the bitunion of all white piece bitboards, same with black
     U64 whitePieces;
     U64 blackPieces;
   private:
@@ -55,7 +57,7 @@ class Position {
     // bitmask of 4 bits e.g. 1101 corresponds to KQq
     int castleRights;
     // stores the square of en passent, if available
-    std::string enPassent;
+    Square enPassent;
     // number of half moves since last pawn move or capture
     int halfMove;
     // increments each time black moves
@@ -64,7 +66,7 @@ class Position {
  private:
     bool Oturn;
     int OcastleRights;
-    std::string OenPassent;
+    Square OenPassent;
     int OhalfMove;
     int OfullMove;
     
@@ -78,26 +80,44 @@ class Position {
     Position& operator=(Position other);
     // converts FEN to Position
     ~Position();
+    // get the FEN of the current position
     std::string toFEN() const;
 
   public:
-    static std::string bitToSquare(U64 bit);
-    static U64 squareToBit(const std::string& s);
-    static std::vector<std::string> bbToSquares(U64 board);
+    // returns a vector of all set squares of a bitboard
+    static std::vector<Square> bbToSquares(U64 board);
 
-    bool isValidMove(const std::string& s, char piece, char orig);
+    //  given a move m, check if it is a valid move wrt the current position
+    bool isValid(const Move& m);
+    // private helper method method
+    bool isValidMove(const Move& m, char piece, char orig);
     // piece p e.g. 'n', position pos e.g. e7
-    bool isMoveBlocked(const std::string& source, const std::string& dest) const;
-    std::vector<std::string> possibleMoves(char p, const std::string& pos) const;
-    std::vector<std::string> validMoves(char p, const std::string& pos);
-    std::vector<std::string> checkingSquares(char p, const std::string& pos) const;  
-    std::vector<std::string> legalMoves();
+    // private method to check if a move is blocked
+    bool isMoveBlocked(const Move& m) const;
+    // returns a list of possible moves for a piece p at square pos
+    // i.e. the possible premoves you can make
+    // private method
+    std::vector<Move> possibleMoves(char p, Square pos) const;
+    // returns a list of valid moves wrt the current position
+    std::vector<Move> validMoves(char p, Square pos);
+    // returns a list of squares that are attacked by a piece p at square pos
+    // private method
+    std::vector<Square> checkingSquares(char p, Square pos) const;
+    // returns a list of all legal moves at the current position
+    std::vector<Move> legalMoves();
+    // updates the whitePieces and blackPieces bitboards wrt thePosition
+    // private method
     void updateBoards();
+    // sets the current position state to the original state
+    // private method
     void resetOriginal();
 
+    // move the position
     void move(Move m);
+    // reset the position
     void unmove();
 
+    // returns if white/black is in check/checkmate
     bool whiteInCheck();
     bool blackInCheck();
     bool whiteInCheckmate();
@@ -108,7 +128,8 @@ class Position {
     // returns the material difference (positive = white, negative = black)
     int materialCount() const;
 
-    int countBits(U64 num) const;
+    // returns the number of set bits
+    static int countBits(U64 num);
 
 
     friend std::ostream& operator<<(std::ostream& out, const Position& pos);

@@ -1,5 +1,5 @@
 CXXFLAGS = -std=c++14 -Wall -MMD -Wextra -pedantic -g -Ofast -flto
-OBJECTS = position.o move.o board.o
+OBJECTS = position.o move.o board.o square.o
 DEPENDS = ${OBJECTS:.o=.d}
 
 main : ${OBJECTS} main.o

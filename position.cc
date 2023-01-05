@@ -1,4 +1,5 @@
 #include "position.h"
+#include "square.h"
 
 #include <sstream>
 #include <cmath>
@@ -88,12 +89,15 @@ Position::Position(const std::string& FEN) {
         if (c == 'K') castleRights += 1 << 3;
         if (c == 'Q') castleRights += 1 << 2;
         if (c == 'k') castleRights += 1 << 1;
-        if (c == 'q') castleRights += 1;
+        if (c == 'q') castleRights += 1 << 0;
     }
 
 
     // En Passent //
-    enPassent = enP;
+    if (enP == "-")
+        enPassent = NoSquare;
+    else
+        enPassent = squareToBit(enP);
 
 
     halfMove = std::stoi(hm);
@@ -263,37 +267,6 @@ std::string Position::toFEN() const {
     return tmp;
 }
 
-// a8 = bit 0
-// h8 = bit 7
-// a1 = bit 56
-// h8 = bit 63
-// converts a bit to a square
-std::string Position::bitToSquare(U64 bit) {
-    int pos = 0;
-    while (bit != 0) {
-        while (bit < (1ULL << 63)) {
-            ++pos;
-            bit = bit << 1;
-        }
-        ++pos;
-        bit = bit << 1;
-    }
-    --pos;
-    return std::string(1, char('h' - ((pos % 8)))) + std::to_string((pos / 8) + 1);
-}
-
-// converts a square (e.g. "e4") to a bit
-U64 Position::squareToBit(const std::string& s) {
-    if (s.length() != 2) {
-        std::cout << "incorrect string length for squareToBit(): given length " << s.length() << '\n';
-    }
-    U64 bit = 0;
-    int c = s.at(0) - 'a';
-    int r = 8 - (s.at(1) - '0');
-    bit = (1ULL << (8*r + c));
-    return bit;
-}
-
 std::ostream& operator<<(std::ostream& out, const Position& pos) {
     std::vector<std::vector<char>> tmp = std::vector<std::vector<char>>(8, std::vector<char>(8, '-'));
     int count = 0;
@@ -323,40 +296,41 @@ std::ostream& operator<<(std::ostream& out, const Position& pos) {
     return out;
 }
 
-// s is in format "e2e4"
-bool Position::isValidMove(const std::string& s, char piece, char orig) {
-    if (s.length() != 4 && s.length() != 6) {
-        std::cout << "incorrect string length for isValidMove(): given length " << s.length() << '\n';
-    }
-    std::string source = s.substr(0, 2);
-    std::string dest = s.substr(2, 2);
+bool Position::isValid(const Move& m) {
+    return isValidMove(m, m.piece, m.piece);
+}
+
+bool Position::isValidMove(const Move& m, char piece, char orig) {
+    Square source = m.source;
+    Square dest = m.dest;
+    char prom = m.promotionPiece;
 
     auto moves = possibleMoves(piece, source);
-    for (auto& m : moves) {
-        if (m == s) goto NEXT;
+    for (const auto& s : moves) {
+        if (s == m) goto NEXT;
     }
     return false;
   NEXT:
     
-    if (tolower(piece) == piece && (squareToBit(dest) & blackPieces) != 0) return false;
-    if (toupper(piece) == piece && (squareToBit(dest) & whitePieces) != 0) return false;
+    if (tolower(piece) == piece && (dest & blackPieces) != 0) return false;
+    if (toupper(piece) == piece && (dest & whitePieces) != 0) return false;
 
     if (piece == 'p') {
-        if (source.at(0) != dest.at(0) && source.at(1) != dest.at(1)) {
-            if (dest != enPassent && (squareToBit(dest) & whitePieces) == 0) return false;
+        if (colNumber(source) != colNumber(dest) && rowNumber(source) != rowNumber(dest)) {
+            if (dest != enPassent && (dest & whitePieces) == 0) return false;
         } else {
-            if ((squareToBit(dest) & blackPieces) != 0 || (squareToBit(dest) & whitePieces) != 0) return false;
+            if ((dest & blackPieces) != 0 || (dest & whitePieces) != 0) return false;
         }
     } else if (piece == 'P') {
-        if (source.at(0) != dest.at(0) && source.at(1) != dest.at(1)) {
-            if (dest != enPassent && (squareToBit(dest) & blackPieces) == 0) return false;
+        if (colNumber(source) != colNumber(dest) && rowNumber(source) != rowNumber(dest)) {
+            if (dest != enPassent && (dest & blackPieces) == 0) return false;
         } else {
-            if ((squareToBit(dest) & whitePieces) != 0 || (squareToBit(dest) & blackPieces) != 0) return false;
+            if ((dest & whitePieces) != 0 || (dest & blackPieces) != 0) return false;
         }
     }
     
     if (tolower(piece) == 'n') {
-        move(Move(s, orig));
+        move(m);
         if (tolower(piece) == piece && blackInCheck()) {
             unmove();
             return false;
@@ -369,55 +343,55 @@ bool Position::isValidMove(const std::string& s, char piece, char orig) {
         return true;
     }
     // check if path is blocked for b, r, q
-    if (piece == 'r' || piece == 'b') return isValidMove(s, 'q', piece);
-    if (piece == 'R' || piece == 'B') return isValidMove(s, 'Q', piece);
+    if (piece == 'r' || piece == 'b') return isValidMove(m, 'q', orig);
+    if (piece == 'R' || piece == 'B') return isValidMove(m, 'Q', orig);
 
     if (piece == 'K') {
         std::string enemyKing = bitToSquare(thePosition.at(pieceMap.at('k')));
 
-        if (enemyKing.at(0) - dest.at(0) <= 1 && enemyKing.at(0) - dest.at(0) >= -1 &&
-            enemyKing.at(1) - dest.at(1) <= 1 && enemyKing.at(1) - dest.at(1) >= -1) {
+        if (enemyKing.at(0) - colNumber(dest) <= 1 && enemyKing.at(0) - colNumber(dest) >= -1 &&
+            enemyKing.at(1) - rowNumber(dest) <= 1 && enemyKing.at(1) - rowNumber(dest) >= -1) {
             return false;
         }
 
-        move(Move(s, orig));
+        move(m);
         if (whiteInCheck()) {
             unmove();
             return false;
         }
         unmove();
 
-        if (dest == "c1" && source == "e1") {
-            if ((squareToBit("b1") & blackPieces) != 0 || 
-                (squareToBit("b1") & whitePieces) != 0) return false;
+        if (dest == C1 && source == E1) {
+            if ((B1 & blackPieces) != 0 || 
+                (B1 & whitePieces) != 0) return false;
         }
 
-        if ((dest == "g1" && source == "e1") || (dest == "c1" && source == "e1")) {
+        if ((dest == G1 && source == E1) || (dest == C1 && source == E1)) {
             if (whiteInCheck()) return false;
-            std::string kpos, rpos, rook, king;
-            king = "e1";
+            Square kpos, rpos, rook, king;
+            king = E1;
             kpos = dest;
-            if (kpos == "g1") {
+            if (kpos == G1) {
                 if ((castleRights & (1 << 3)) == 0) return false;
-                rook = "h1";
-                rpos = "f1";
-            } else if (kpos == "c1") {
+                rook = H1;
+                rpos = F1;
+            } else if (kpos == C1) {
                 if ((castleRights & (1 << 2)) == 0) return false;
-                rook = "a1";
-                rpos = "d1";
+                rook = A1;
+                rpos = D1;
             } else {
                 return false;
             }
 
-            if (!((thePosition.at(pieceMap.at('K'))) & squareToBit(king)) ||
-                !((thePosition.at(pieceMap.at('R'))) & squareToBit(rook))) return false;
+            if (!((thePosition.at(pieceMap.at('K'))) & king) ||
+                !((thePosition.at(pieceMap.at('R'))) & rook)) return false;
 
-            if ((squareToBit(kpos) & blackPieces) != 0 || 
-                (squareToBit(rpos) & blackPieces) != 0) return false;
-            if ((squareToBit(kpos) & whitePieces) != 0 || 
-                (squareToBit(rpos) & whitePieces) != 0) return false;
+            if ((kpos & blackPieces) != 0 || 
+                (rpos & blackPieces) != 0) return false;
+            if ((kpos & whitePieces) != 0 || 
+                (rpos & whitePieces) != 0) return false;
 
-            move(Move("e1" + rpos, 'K'));
+            move(Move(E1, rpos, 'K'));
             if (whiteInCheck()) {
                 unmove();
                 return false;
@@ -427,51 +401,44 @@ bool Position::isValidMove(const std::string& s, char piece, char orig) {
         }
         return true;
     } else if (piece == 'k') {
-        std::string enemyKing = bitToSquare(thePosition.at(pieceMap.at('K')));
-
-        if (enemyKing.at(0) - dest.at(0) <= 1 && enemyKing.at(0) - dest.at(0) >= -1 &&
-            enemyKing.at(1) - dest.at(1) <= 1 && enemyKing.at(1) - dest.at(1) >= -1) {
-            return false;
-        }
-
-        move(Move(s, orig));
+        move(m);
         if (blackInCheck()) {
             unmove();
             return false;
         }
         unmove();
 
-        if (dest == "c8" && source == "e8") {
-            if ((squareToBit("b8") & blackPieces) != 0 || 
-                (squareToBit("b8") & whitePieces) != 0) return false;
+        if (dest == C8 && source == E8) {
+            if ((B8 & blackPieces) != 0 || 
+                (B8 & whitePieces) != 0) return false;
         }
 
-        if ((dest == "g8" && source == "e8") || (dest == "c8" && source == "e8")) {
+        if ((dest == G8 && source == E8) || (dest == C8 && source == E8)) {
             if (blackInCheck()) return false;
-            std::string kpos, rpos, rook, king;
-            king = "e8";
+            Square kpos, rpos, rook, king;
+            king = E8;
             kpos = dest;
-            if (kpos == "g8") {
+            if (kpos == G8) {
                 if ((castleRights & (1 << 1)) == 0) return false;
-                rook = "h8";
-                rpos = "f8";
-            } else if (kpos == "c8") {
+                rook = H8;
+                rpos = F8;
+            } else if (kpos == C8) {
                 if ((castleRights & (1 << 0)) == 0) return false;
-                rook = "a8";
-                rpos = "d8";
+                rook = A8;
+                rpos = D8;
             } else {
                 return false;
             }
 
-            if (!((thePosition.at(pieceMap.at('k'))) & squareToBit(king)) ||
-                !((thePosition.at(pieceMap.at('r'))) & squareToBit(rook))) return false;
+            if (!((thePosition.at(pieceMap.at('k'))) & king) ||
+                !((thePosition.at(pieceMap.at('r'))) & rook)) return false;
 
-            if ((squareToBit(kpos) & blackPieces) != 0 || 
-                (squareToBit(rpos) & blackPieces) != 0) return false;
-            if ((squareToBit(kpos) & whitePieces) != 0 || 
-                (squareToBit(rpos) & whitePieces) != 0) return false;
+            if ((kpos & blackPieces) != 0 || 
+                (rpos & blackPieces) != 0) return false;
+            if ((kpos & whitePieces) != 0 || 
+                (rpos & whitePieces) != 0) return false;
 
-            move(Move("e8" + rpos, 'k'));
+            move(Move(E8, rpos, 'k'));
             if (blackInCheck()) {
                 unmove();
                 return false;
@@ -481,9 +448,9 @@ bool Position::isValidMove(const std::string& s, char piece, char orig) {
         return true;
     }
 
-    if (isMoveBlocked(source, dest)) return false;
+    if (isMoveBlocked(Move(source, dest, orig, prom))) return false;
 
-    move(Move(s, orig));
+    move(Move(source, dest, orig, prom));
     if (tolower(piece) == piece && blackInCheck()) {
         unmove();
         return false;
@@ -498,106 +465,76 @@ bool Position::isValidMove(const std::string& s, char piece, char orig) {
 } // isValidMove
 
 // source and dest are 2-length strings
-bool Position::isMoveBlocked(const std::string& source, const std::string& dest) const {
-    if (source.length() != 2 || dest.length() != 2) {
-        std::cout << "incorrect string length for isMoveBlocked(): given source length " << 
-            source.length() << " and dest length " << dest.length() << '\n';
-    }
-    std::string cur = source;
-    if (source.at(0) == dest.at(0) && source.at(1) <= dest.at(1)) {
-        int i = 1;
-        cur = source.substr(0, 1) + std::string(1, source.at(1) + i);
-        ++i;
+bool Position::isMoveBlocked(const Move& m) const {
+    Square source = m.source;
+    Square dest = m.dest;
+    Square cur = source;
+    if (colNumber(source) == colNumber(dest) && rowNumber(source) <= rowNumber(dest)) {
+        cur >>= 8;
         while (cur != dest) {
-            if ((squareToBit(cur) & blackPieces) != 0 || 
-                (squareToBit(cur) & whitePieces) != 0) return true;
-            cur = source.substr(0, 1) + std::string(1, source.at(1) + i);
-            ++i;
+            if ((cur & blackPieces) != 0 || 
+                (cur & whitePieces) != 0) return true;
+            cur >>= 8;
         }
-    } else if (source.at(0) == dest.at(0) && source.at(1) >= dest.at(1)) {
-        int i = 1;
-        cur = source.substr(0, 1) + std::string(1, source.at(1) - i);
-        ++i;
+    } else if (colNumber(source) == colNumber(dest) && rowNumber(source) >= rowNumber(dest)) {
+        cur <<= 8;
         while (cur != dest) {
-            if ((squareToBit(cur) & blackPieces) != 0 || 
-                (squareToBit(cur) & whitePieces) != 0) return true;
-            cur = source.substr(0, 1) + std::string(1, source.at(1) - i);
-            ++i;
+            if ((cur & blackPieces) != 0 || 
+                (cur & whitePieces) != 0) return true;
+            cur <<= 8;
         }
-    } else if (source.at(0) >= dest.at(0) && source.at(1) == dest.at(1)) {
-        int i = 1;
-        cur = std::string(1, source.at(0) - i) + source.substr(1, 1);
-        ++i;
+    } else if (colNumber(source) >= colNumber(dest) && rowNumber(source) == rowNumber(dest)) {
+        cur >>= 1;
         while (cur != dest) {
-            if ((squareToBit(cur) & blackPieces) != 0 || 
-                (squareToBit(cur) & whitePieces) != 0) return true;
-            cur = std::string(1, source.at(0) - i) + source.substr(1, 1);
-            ++i;
+            if ((cur & blackPieces) != 0 || 
+                (cur & whitePieces) != 0) return true;
+            cur >>= 1;
         }
-    } else if (source.at(0) <= dest.at(0) && source.at(1) == dest.at(1)) {
-        int i = 1;
-        cur = std::string(1, source.at(0) + i) + source.substr(1, 1);
-        ++i;
+    } else if (colNumber(source) <= colNumber(dest) && rowNumber(source) == rowNumber(dest)) {
+        cur <<= 1;
         while (cur != dest) {
-            if ((squareToBit(cur) & blackPieces) != 0 || 
-                (squareToBit(cur) & whitePieces) != 0) return true;
-            cur = std::string(1, source.at(0) + i) + source.substr(1, 1);
-            ++i;
+            if ((cur & blackPieces) != 0 || 
+                (cur & whitePieces) != 0) return true;
+            cur <<= 1;
         }
-    } else if (source.at(0) <= dest.at(0) && source.at(1) <= dest.at(1)) {
-        int i = 1;
-        cur = std::string(1, source.at(0) + i) + std::string(1, source.at(1) + i);
-        ++i;
+    } else if (colNumber(source) <= colNumber(dest) && rowNumber(source) <= rowNumber(dest)) {
+        cur >>= 7;
         while (cur != dest) {
-            if ((squareToBit(cur) & blackPieces) != 0 || 
-                (squareToBit(cur) & whitePieces) != 0) return true;
-            cur = std::string(1, source.at(0) + i) + std::string(1, source.at(1) + i);
-            ++i;
+            if ((cur & blackPieces) != 0 || 
+                (cur & whitePieces) != 0) return true;
+            cur >>= 7;
         }
-    } else if (source.at(0) >= dest.at(0) && source.at(1) >= dest.at(1)) {
-        int i = 1;
-        cur = std::string(1, source.at(0) - i) + std::string(1, source.at(1) - i);
-        ++i;
+    } else if (colNumber(source) >= colNumber(dest) && rowNumber(source) >= rowNumber(dest)) {
+        cur <<= 7;
         while (cur != dest) {
-            if ((squareToBit(cur) & blackPieces) != 0 || 
-                (squareToBit(cur) & whitePieces) != 0) return true;
-            cur = std::string(1, source.at(0) - i) + std::string(1, source.at(1) - i);
-            ++i;
+            if ((cur & blackPieces) != 0 || 
+                (cur & whitePieces) != 0) return true;
+            cur <<= 7;
         }
-    } else if (source.at(0) <= dest.at(0) && source.at(1) >= dest.at(1)) {
-        int i = 1;
-        cur = std::string(1, source.at(0) + i) + std::string(1, source.at(1) - i);
-        ++i;
+    } else if (colNumber(source) <= colNumber(dest) && rowNumber(source) >= rowNumber(dest)) {
+        cur <<= 9;
         while (cur != dest) {
-            if ((squareToBit(cur) & blackPieces) != 0 || 
-                (squareToBit(cur) & whitePieces) != 0) return true;
-            cur = std::string(1, source.at(0) + i) + std::string(1, source.at(1) - i);
-            ++i;
+            if ((cur & blackPieces) != 0 || 
+                (cur & whitePieces) != 0) return true;
+            cur <<= 9;
         }
-    } else if (source.at(0) >= dest.at(0) && source.at(1) <= dest.at(1)) {
-        int i = 1;
-        cur = std::string(1, source.at(0) - i) + std::string(1, source.at(1) + i);
-        ++i;
+    } else if (colNumber(source) >= colNumber(dest) && rowNumber(source) <= rowNumber(dest)) {
+        cur >>= 9;
         while (cur != dest) {
-            if ((squareToBit(cur) & blackPieces) != 0 || 
-                (squareToBit(cur) & whitePieces) != 0) return true;
-            cur = std::string(1, source.at(0) - i) + std::string(1, source.at(1) + i);
-            ++i;
+            if ((cur & blackPieces) != 0 || 
+                (cur & whitePieces) != 0) return true;
+            cur >>= 9;
         }
     }
     return false;
 }
 
 // pos is a square, e.g. "e4"
-std::vector<std::string> Position::validMoves(char p, const std::string& pos) {
-    if (pos.length() != 2) {
-        std::cout << "incorrect string length for validMoves(): given length " << 
-            pos.length() << '\n';
-    }
+std::vector<Move> Position::validMoves(char p, Square pos) {
     auto moves = possibleMoves(p, pos);
-    std::vector<std::string> tmp;
+    std::vector<Move> tmp;
     for (auto& i : moves) {
-        if (isValidMove(i, p, p)) {
+        if (isValid(i)) {
             tmp.push_back(i);
         }
     }
@@ -605,234 +542,373 @@ std::vector<std::string> Position::validMoves(char p, const std::string& pos) {
 }
 
 // pos is a square, e.g. "e4"
-std::vector<std::string> Position::possibleMoves(char p, const std::string& pos) const {
-    if (pos.length() != 2) {
-        std::cout << "incorrect string length for possibleMoves(): given length " << 
-            pos.length() << '\n';
-    }
+std::vector<Move> Position::possibleMoves(char p, Square pos) const {
     if (p == 'p') {
-        std::vector<std::string> tmp;
-        if (pos.at(1) == '7') {
-            tmp = std::vector<std::string>{
-                    pos + pos.substr(0, 1) + "6", pos + pos.substr(0, 1) + "5",
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) - 1),
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) - 1)};
-        } else if (pos.at(1) == '2') {
-            tmp = std::vector<std::string>{pos + pos.substr(0, 1) + "1=n",
-                                           pos + pos.substr(0, 1) + "1=b",
-                                           pos + pos.substr(0, 1) + "1=r",
-                                           pos + pos.substr(0, 1) + "1=q",
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) - 1) + "=n",
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) - 1) + "=b",
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) - 1) + "=r",
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) - 1) + "=q",
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) - 1) + "=n",
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) - 1) + "=b",
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) - 1) + "=r",
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) - 1) + "=q"};
-        } else if (pos.at(1) <= '6' && pos.at(1) >= '3') {
-            tmp = std::vector<std::string>{
-                    pos + pos.substr(0, 1) + std::string(1, pos.at(1) - 1),
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) - 1),
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) - 1)};
+        std::vector<Move> tmp;
+        if (rowNumber(pos) == 7 && colNumber(pos) < 'h' && colNumber(pos) > 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos << 8,  'p'),
+                    Move(pos, pos << 16, 'p'),
+                    Move(pos, pos << 7,  'p'),
+                    Move(pos, pos << 9,  'p')
+            };
+        } else if (rowNumber(pos) == 7 && colNumber(pos) == 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos << 8,  'p'),
+                    Move(pos, pos << 16, 'p'),
+                    Move(pos, pos << 9,  'p')
+            };
+        } else if (rowNumber(pos) == 7 && colNumber(pos) == 'h') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos << 8,  'p'),
+                    Move(pos, pos << 16, 'p'),
+                    Move(pos, pos << 7,  'p')
+            };
+        } else if (rowNumber(pos) == 2 && colNumber(pos) < 'h' && colNumber(pos) > 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos << 8, 'p', 'n'),
+                    Move(pos, pos << 8, 'p', 'b'),
+                    Move(pos, pos << 8, 'p', 'r'),
+                    Move(pos, pos << 8, 'p', 'q'),
+
+                    Move(pos, pos << 7, 'p', 'n'),
+                    Move(pos, pos << 7, 'p', 'b'),
+                    Move(pos, pos << 7, 'p', 'r'),
+                    Move(pos, pos << 7, 'p', 'q'),
+
+                    Move(pos, pos << 9, 'p', 'n'),
+                    Move(pos, pos << 9, 'p', 'b'),
+                    Move(pos, pos << 9, 'p', 'r'),
+                    Move(pos, pos << 9, 'p', 'q'),
+            };
+        } else if (rowNumber(pos) == 2 && colNumber(pos) == 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos << 8, 'p', 'n'),
+                    Move(pos, pos << 8, 'p', 'b'),
+                    Move(pos, pos << 8, 'p', 'r'),
+                    Move(pos, pos << 8, 'p', 'q'),
+
+                    Move(pos, pos << 9, 'p', 'n'),
+                    Move(pos, pos << 9, 'p', 'b'),
+                    Move(pos, pos << 9, 'p', 'r'),
+                    Move(pos, pos << 9, 'p', 'q'),
+            };
+        } else if (rowNumber(pos) == 2 && colNumber(pos) == 'h') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos << 8, 'p', 'n'),
+                    Move(pos, pos << 8, 'p', 'b'),
+                    Move(pos, pos << 8, 'p', 'r'),
+                    Move(pos, pos << 8, 'p', 'q'),
+
+                    Move(pos, pos << 7, 'p', 'n'),
+                    Move(pos, pos << 7, 'p', 'b'),
+                    Move(pos, pos << 7, 'p', 'r'),
+                    Move(pos, pos << 7, 'p', 'q'),
+            };
+        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
+                    colNumber(pos) < 'h' && colNumber(pos) > 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos << 8, 'p'),
+                    Move(pos, pos << 7, 'p'),
+                    Move(pos, pos << 9, 'p')
+            };
+        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
+                    colNumber(pos) == 'h') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos << 8, 'p'),
+                    Move(pos, pos << 7, 'p')
+            };
+        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
+                    colNumber(pos) == 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos << 8, 'p'),
+                    Move(pos, pos << 9, 'p')
+            };
         } else {
-            std::cerr << "invalid black pawn position" << '\n';
+            std::cout << "invalid black pawn position: " << bitToSquare(pos) << '\n';
+        }
+        return tmp;
+    } else if (p == 'P') {
+        std::vector<Move> tmp;
+        if (rowNumber(pos) == 2 && colNumber(pos) < 'h' && colNumber(pos) > 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos >> 8,  'P'),
+                    Move(pos, pos >> 16, 'P'),
+                    Move(pos, pos >> 7,  'P'),
+                    Move(pos, pos >> 9,  'P')
+            };
+        } else if (rowNumber(pos) == 2 && colNumber(pos) == 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos >> 8,  'P'),
+                    Move(pos, pos >> 16, 'P'),
+                    Move(pos, pos >> 7,  'P')
+            };
+        } else if (rowNumber(pos) == 2 && colNumber(pos) == 'h') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos >> 8,  'P'),
+                    Move(pos, pos >> 16, 'P'),
+                    Move(pos, pos >> 9,  'P')
+            };
+        } else if (rowNumber(pos) == 7 && colNumber(pos) < 'h' && colNumber(pos) > 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos >> 8, 'P', 'N'),
+                    Move(pos, pos >> 8, 'P', 'B'),
+                    Move(pos, pos >> 8, 'P', 'R'),
+                    Move(pos, pos >> 8, 'P', 'Q'),
+
+                    Move(pos, pos >> 7, 'P', 'N'),
+                    Move(pos, pos >> 7, 'P', 'B'),
+                    Move(pos, pos >> 7, 'P', 'R'),
+                    Move(pos, pos >> 7, 'P', 'Q'),
+
+                    Move(pos, pos >> 9, 'P', 'N'),
+                    Move(pos, pos >> 9, 'P', 'B'),
+                    Move(pos, pos >> 9, 'P', 'R'),
+                    Move(pos, pos >> 9, 'P', 'Q'),
+            };
+        } else if (rowNumber(pos) == 7 && colNumber(pos) == 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos >> 8, 'P', 'N'),
+                    Move(pos, pos >> 8, 'P', 'B'),
+                    Move(pos, pos >> 8, 'P', 'R'),
+                    Move(pos, pos >> 8, 'P', 'Q'),
+
+                    Move(pos, pos >> 7, 'P', 'N'),
+                    Move(pos, pos >> 7, 'P', 'B'),
+                    Move(pos, pos >> 7, 'P', 'R'),
+                    Move(pos, pos >> 7, 'P', 'Q'),
+            };
+        } else if (rowNumber(pos) == 7 && colNumber(pos) == 'h') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos >> 8, 'P', 'N'),
+                    Move(pos, pos >> 8, 'P', 'B'),
+                    Move(pos, pos >> 8, 'P', 'R'),
+                    Move(pos, pos >> 8, 'P', 'Q'),
+
+                    Move(pos, pos >> 9, 'P', 'N'),
+                    Move(pos, pos >> 9, 'P', 'B'),
+                    Move(pos, pos >> 9, 'P', 'R'),
+                    Move(pos, pos >> 9, 'P', 'Q'),
+            };
+        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
+                    colNumber(pos) < 'h' && colNumber(pos) > 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos >> 8, 'P'),
+                    Move(pos, pos >> 7, 'P'),
+                    Move(pos, pos >> 9, 'P')
+            };
+        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
+                    colNumber(pos) == 'h') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos >> 8, 'P'),
+                    Move(pos, pos >> 9, 'P')
+            };
+        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
+                    colNumber(pos) == 'a') {
+            tmp = std::vector<Move>{
+                    Move(pos, pos >> 8, 'P'),
+                    Move(pos, pos >> 7, 'P')
+            };
+        } else {
+            std::cout << "invalid white pawn position: " << bitToSquare(pos) << '\n';
+        }
+        return tmp;
+    } else if (tolower(p) == 'n') {
+        std::vector<Move> tmp;
+        if (colNumber(pos) > 'a' && rowNumber(pos) > 2)
+            tmp.push_back(Move(pos, pos << 15, p));
+
+        if (colNumber(pos) > 'a' && rowNumber(pos) < 7)
+            tmp.push_back(Move(pos, pos >> 17, p));
+
+        if (colNumber(pos) > 'b' && rowNumber(pos) > 1)
+            tmp.push_back(Move(pos, pos << 6, p));
+
+        if (colNumber(pos) > 'b' && rowNumber(pos) < 8)
+            tmp.push_back(Move(pos, pos >> 10, p));
+
+        if (colNumber(pos) < 'h' && rowNumber(pos) > 2)
+            tmp.push_back(Move(pos, pos << 17, p));
+
+        if (colNumber(pos) < 'h' && rowNumber(pos) < 7)
+            tmp.push_back(Move(pos, pos >> 15, p));
+
+        if (colNumber(pos) < 'g' && rowNumber(pos) > 1)
+            tmp.push_back(Move(pos, pos << 10, p));
+
+        if (colNumber(pos) < 'g' && rowNumber(pos) < 8)
+            tmp.push_back(Move(pos, pos >> 6, p));
+
+        return tmp;
+    } else if (tolower(p) == 'b') {
+        std::vector<Move> tmp;
+        char r = colNumber(pos);
+        int c = rowNumber(pos);
+        int i = 1;
+        while (r > 'a' && c > 1) {
+            --r;
+            --c;
+            tmp.push_back(Move(pos, pos << i * 7, p));
+            ++i;
         }
 
-        std::vector<std::string> cpy;
-        for (auto& i : tmp) {
-            if ((i.at(2) >= 'a' && i.at(2) <= 'h') && (i.at(3) >= '1' && i.at(3) <= '8')) {
-                cpy.push_back(i);
-            }
-        }
-        return cpy;
-    } else if (p == 'P') {
-        std::vector<std::string> tmp;
-        if (pos.at(1) == '2') {
-            tmp = std::vector<std::string>{pos + pos.substr(0, 1) + "3", pos + pos.substr(0, 1) + "4",
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) + 1),
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) + 1)};
-        } else if (pos.at(1) == '7') {
-            tmp = std::vector<std::string>{pos + pos.substr(0, 1) + "8=N",
-                                           pos + pos.substr(0, 1) + "8=B",
-                                           pos + pos.substr(0, 1) + "8=R",
-                                           pos + pos.substr(0, 1) + "8=Q",
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) + 1) + "=N",
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) + 1) + "=B",
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) + 1) + "=R",
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) + 1) + "=Q",
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) + 1) + "=N",
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) + 1) + "=B",
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) + 1) + "=R",
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) + 1) + "=Q"};
-        } else if (pos.at(1) <= '6' && pos.at(1) >= '3') {
-            tmp = std::vector<std::string>{
-                    pos + pos.substr(0, 1) + std::string(1, pos.at(1) + 1),
-                    pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) + 1),
-                    pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) + 1)};
-        } else {
-            std::cerr << "invalid white pawn position" << '\n';
-        }
-        
-        std::vector<std::string> cpy;
-        for (auto& i : tmp) {
-            if ((i.at(2) >= 'a' && i.at(2) <= 'h') && (i.at(3) >= '1' && i.at(3) <= '8')) {
-                cpy.push_back(i);
-            }
-        }
-        return cpy;
-    } else if (tolower(p) == 'n') {
-        std::vector<std::string> tmp = std::vector<std::string>{
-            pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) - 2), 
-            pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) + 2), 
-            pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) - 2), 
-            pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) + 2), 
-            pos + std::string(1, pos.at(0) - 2) + std::string(1, pos.at(1) - 1), 
-            pos + std::string(1, pos.at(0) - 2) + std::string(1, pos.at(1) + 1), 
-            pos + std::string(1, pos.at(0) + 2) + std::string(1, pos.at(1) - 1), 
-            pos + std::string(1, pos.at(0) + 2) + std::string(1, pos.at(1) + 1), 
-        };
-        std::vector<std::string> cpy;
-        for (auto& i : tmp) {
-            if ((i.at(2) >= 'a' && i.at(2) <= 'h') && (i.at(3) >= '1' && i.at(3) <= '8')) {
-                cpy.push_back(i);
-            }
-        }
-        return cpy;
-    } else if (tolower(p) == 'b') {
-        std::vector<std::string> tmp;
-        char c = pos.at(0);
-        char cur = pos.at(1);
-        while (cur >= '1' + 1 && c >= 'a' + 1) {
-            --c;
-            --cur;
-            tmp.push_back(pos + std::string(1, c) + std::string(1, cur));
-        }
-        c = pos.at(0);
-        cur = pos.at(1);
-        while (cur >= '1' + 1 && c <= 'h' - 1) {
+        r = colNumber(pos);
+        c = rowNumber(pos);
+        i = 1;
+        while (r > 'a' && c < 8) {
+            --r;
             ++c;
-            --cur;
-            tmp.push_back(pos + std::string(1, c) + std::string(1, cur));
+            tmp.push_back(Move(pos, pos >> i * 9, p));
+            ++i;
         }
-        c = pos.at(0);
-        cur = pos.at(1);
-        while (cur <= '8' - 1 && c <= 'h' - 1) {
-            ++c;
-            ++cur;
-            tmp.push_back(pos +std::string(1, c) + std::string(1, cur));
-        }
-        c = pos.at(0);
-        cur = pos.at(1);
-        while (cur <= '8' - 1 && c >= 'a' + 1) {
+
+        r = colNumber(pos);
+        c = rowNumber(pos);
+        i = 1;
+        while (r < 'h' && c > 1) {
+            ++r;
             --c;
-            ++cur;
-            tmp.push_back(pos + std::string(1, c) + std::string(1, cur));
+            tmp.push_back(Move(pos, pos << i * 9, p));
+            ++i;
+        }
+
+        r = colNumber(pos);
+        c = rowNumber(pos);
+        i = 1;
+        while (r < 'h' && c < 8) {
+            ++r;
+            ++c;
+            tmp.push_back(Move(pos, pos >> i * 7, p));
+            ++i;
         }
         return tmp;
     } else if (tolower(p) == 'r') {
-        std::vector<std::string> tmp;
-        char c = pos.at(0);
-        char r = pos.at(1);
-        while (c >= 'a' + 1) {
-            --c;
-            tmp.push_back(pos + std::string(1, c) + std::string(1, r));
-        }
-        c = pos.at(0);
-        r = pos.at(1);
-        while (c <= 'h' - 1) {
-            ++c;
-            tmp.push_back(pos + std::string(1, c) + std::string(1, r));
-        }
-        c = pos.at(0);
-        r = pos.at(1);
-        while (r >= '1' + 1) {
+        std::vector<Move> tmp;
+        char r = colNumber(pos);
+        int c = rowNumber(pos);
+        int i = 1;
+        while (r > 'a') {
             --r;
-            tmp.push_back(pos + std::string(1, c) + std::string(1, r));
+            tmp.push_back(Move(pos, pos >> i, p));
+            ++i;
         }
-        r = pos.at(1);
-        c = pos.at(0);
-        while (r <= '8' - 1) {
+
+        r = colNumber(pos);
+        c = rowNumber(pos);
+        i = 1;
+        while (r < 'h') {
             ++r;
-            tmp.push_back(pos + std::string(1, c) + std::string(1, r));
+            tmp.push_back(Move(pos, pos << i, p));
+            ++i;
         }
+
+        r = colNumber(pos);
+        c = rowNumber(pos);
+        i = 1;
+        while (c > 1) {
+            --c;
+            tmp.push_back(Move(pos, pos << i * 8, p));
+            ++i;
+        }
+
+        r = colNumber(pos);
+        c = rowNumber(pos);
+        i = 1;
+        while (c < 8) {
+            ++c;
+            tmp.push_back(Move(pos, pos >> i * 8, p));
+            ++i;
+        }
+
         return tmp;
     } else if (tolower(p) == 'q') {
         auto r = possibleMoves('r', pos);
         auto b = possibleMoves('b', pos);
-        for (auto i : b) {
+        for (auto& i : b) {
             r.push_back(i);
+        }
+        for (auto& i : r) {
+            i.piece = p;
         }
         return r;
     } else if (tolower(p) == 'k') {
-        std::vector<std::string> tmp = std::vector<std::string>{
-            pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) - 1), 
-            pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1)), 
-            pos + std::string(1, pos.at(0) - 1) + std::string(1, pos.at(1) + 1), 
-            pos + std::string(1, pos.at(0)) + std::string(1, pos.at(1) - 1), 
-            pos + std::string(1, pos.at(0)) + std::string(1, pos.at(1) + 1), 
-            pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) - 1), 
-            pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1)), 
-            pos + std::string(1, pos.at(0) + 1) + std::string(1, pos.at(1) + 1)};
+        std::vector<Move> tmp;
+
+        if (colNumber(pos) > 'a')
+            tmp.push_back(Move(pos, pos >> 1, p));
         
-        std::vector<std::string> cpy;
-        for (auto& i : tmp) {
-            if ((i.at(2) >= 'a' && i.at(2) <= 'h') && (i.at(3) >= '1' && i.at(3) <= '8')) {
-                cpy.push_back(i);
-            }
-        }
+        if (colNumber(pos) < 'h')
+            tmp.push_back(Move(pos, pos << 1, p));
+        
+        if (rowNumber(pos) > 1)
+            tmp.push_back(Move(pos, pos << 8, p));
+        
+        if (rowNumber(pos) < 8)
+            tmp.push_back(Move(pos, pos >> 8, p));
+        
+        if (rowNumber(pos) > 1 && colNumber(pos) > 'a')
+            tmp.push_back(Move(pos, pos << 7, p));
+        
+        if (rowNumber(pos) > 1 && colNumber(pos) < 'h')
+            tmp.push_back(Move(pos, pos << 9, p));
+        
+        if (rowNumber(pos) < 8 && colNumber(pos) > 'a')
+            tmp.push_back(Move(pos, pos >> 9, p));
+        
+        if (rowNumber(pos) < 8 && colNumber(pos) < 'h')
+            tmp.push_back(Move(pos, pos >> 7, p));
+
+
         if (toupper(p) == p) {
-            if (castleRights & (1 << 3)) cpy.push_back("e1g1");
-            if (castleRights & (1 << 2)) cpy.push_back("e1c1");
+            if (castleRights & (1 << 3) && pos == E1) tmp.push_back(Move(E1, G1, 'K'));
+            if (castleRights & (1 << 2) && pos == E1) tmp.push_back(Move(E1, C1, 'K'));
         } else if (tolower(p) == p) {
-            if (castleRights & (1 << 1)) cpy.push_back("e8g8");
-            if (castleRights & (1 << 0)) cpy.push_back("e8c8");
+            if (castleRights & (1 << 1) && pos == E8) tmp.push_back(Move(E8, G8, 'k'));
+            if (castleRights & (1 << 0) && pos == E8) tmp.push_back(Move(E8, C8, 'k'));
         }
-        return cpy;
+        return tmp;
         
     }
-    return std::vector<std::string>();
+    return std::vector<Move>();
 } // possibleMoves
 
 // pos is a square, e.g. "e4"
-std::vector<std::string> Position::checkingSquares(char p, const std::string& pos) const {
-    if (pos.length() != 2) {
-        std::cout << "incorrect string length for checkingSquares(): given length " << 
-            pos.length() << '\n';
+std::vector<Square> Position::checkingSquares(char p, Square pos) const {
+    std::vector<Move> tmp = possibleMoves(p, pos);
+    if (tolower(p) == 'n') {
+        std::vector<Square> r;
+        for (auto& i : tmp) {
+            r.push_back(i.dest);
+        }
+        return r;
     }
-    std::vector<std::string> tmp = possibleMoves(p, pos);
-    if (tolower(p) == 'n') return tmp;
 
-    std::vector<std::string> cpy;
+    std::vector<Square> cpy;
     for (auto& i : tmp) {
-        if (!isMoveBlocked(i.substr(0, 2), i.substr(2, 2)) && 
-            !(tolower(p) == 'p' && i.at(0) == i.at(2))) {
-            cpy.push_back(i);
+        if (!isMoveBlocked(i) && 
+            !(tolower(p) == 'p' && colNumber(i.source) == colNumber(i.dest))) {
+            cpy.push_back(i.dest);
         }
     }
     return cpy;
 }
 
-std::vector<std::string> Position::bbToSquares(U64 board) {
-    if (board == 0) return std::vector<std::string>();
-    std::vector<U64> bitSquares;
+std::vector<Square> Position::bbToSquares(U64 board) {
+    if (board == 0) return std::vector<Square>();
+    std::vector<Square> bitSquares;
     int c = 63;
     while (board != 0) {
         if (board >= (1ULL << 63)) {
             bitSquares.push_back(1ULL << c);
         }
-        board = board << 1;
+        board <<= 1;
         --c;
     }
-    std::vector<std::string> tmp;
-    for (auto i : bitSquares) {
-        tmp.push_back(bitToSquare(i));
-    }
-    return tmp;
+    return bitSquares;
 }
 
-std::vector<std::string> Position::legalMoves() {
-    std::vector<std::string> tmp;
+std::vector<Move> Position::legalMoves() {
+    std::vector<Move> tmp;
     for (int i = 0; i < 12; ++i) {
         if ((i <= 5 && turn == true) ||
             (i >= 6 && turn == false)) continue;
@@ -847,44 +923,44 @@ std::vector<std::string> Position::legalMoves() {
 
 void Position::move(Move m) {
     // set the source bit to 0
-    thePosition.at(pieceMap.at(m.piece)) &= ~(squareToBit(m.source));
+    thePosition.at(pieceMap.at(m.piece)) &= ~m.source;
     
     // set all destination bits to 0
     for (auto& board : thePosition) {
-        board &= ~(squareToBit(m.dest));
+        board &= ~m.dest;
     }
 
     // set the destination bit of the moving piece to 1
-    thePosition.at(pieceMap.at(m.piece)) |= (squareToBit(m.dest));
+    thePosition.at(pieceMap.at(m.piece)) |= m.dest;
 
     // if promotion
     if (m.promotionPiece != '-') {
         // set the destination square of the pawn to 0
-        thePosition.at(pieceMap.at(m.piece)) &= ~(squareToBit(m.dest));
+        thePosition.at(pieceMap.at(m.piece)) &= ~m.dest;
 
-        thePosition.at(pieceMap.at(m.promotionPiece)) |= squareToBit(m.dest);
+        thePosition.at(pieceMap.at(m.promotionPiece)) |= m.dest;
     }
 
     // if castle
-    if (m.piece == 'K' && m.source == "e1" && m.dest == "g1") {
-        thePosition.at(pieceMap.at('R')) &= ~(squareToBit("h1"));
-        thePosition.at(pieceMap.at('R')) |= (squareToBit("f1"));
-    } else if (m.piece == 'K' && m.source == "e1" && m.dest == "c1") {
-        thePosition.at(pieceMap.at('R')) &= ~(squareToBit("a1"));
-        thePosition.at(pieceMap.at('R')) |= (squareToBit("d1"));
-    } else if (m.piece == 'k' && m.source == "e8" && m.dest == "g8") {
-        thePosition.at(pieceMap.at('r')) &= ~(squareToBit("h8"));
-        thePosition.at(pieceMap.at('r')) |= (squareToBit("f8"));
-    } else if (m.piece == 'k' && m.source == "e8" && m.dest == "c8") {
-        thePosition.at(pieceMap.at('r')) &= ~(squareToBit("a8"));
-        thePosition.at(pieceMap.at('r')) |= (squareToBit("d8"));
+    if (m.piece == 'K' && m.source == E1 && m.dest == G1) {
+        thePosition.at(pieceMap.at('R')) &= ~H1;
+        thePosition.at(pieceMap.at('R')) |= F1;
+    } else if (m.piece == 'K' && m.source == E1 && m.dest == C1) {
+        thePosition.at(pieceMap.at('R')) &= ~A1;
+        thePosition.at(pieceMap.at('R')) |= D1;
+    } else if (m.piece == 'k' && m.source == E8 && m.dest == G8) {
+        thePosition.at(pieceMap.at('r')) &= ~H8;
+        thePosition.at(pieceMap.at('r')) |= F8;
+    } else if (m.piece == 'k' && m.source == E8 && m.dest == C8) {
+        thePosition.at(pieceMap.at('r')) &= ~A8;
+        thePosition.at(pieceMap.at('r')) |= D8;
     }
 
     // if en passent
     if (m.piece == 'P' && m.dest == enPassent) {
-        thePosition.at(pieceMap.at('p')) &= ~(squareToBit(m.dest.substr(0, 1) + "5"));
+        thePosition.at(pieceMap.at('p')) &= ~(m.dest << 8);
     } else if (m.piece == 'p' && m.dest == enPassent) {
-        thePosition.at(pieceMap.at('P')) &= ~(squareToBit(m.dest.substr(0, 1) + "4"));
+        thePosition.at(pieceMap.at('P')) &= ~(m.dest >> 8);
     }
 
     turn = !turn;
@@ -906,7 +982,6 @@ void Position::move(Move m) {
     }
 
     if (tolower(m.piece) == m.piece) ++fullMove;
-
 }
 
 void Position::unmove() {
@@ -925,7 +1000,7 @@ bool Position::whiteInCheck() {
     for (int i = 6; i <= 10; ++i) {
         for (auto& j : bbToSquares(thePosition.at(i))) {
             for (auto& k : checkingSquares(intMap.at(i), j)) {
-                if (thePosition.at(pieceMap.at('K')) & squareToBit(k.substr(2, 2))) {
+                if (thePosition.at(pieceMap.at('K')) & k) {
                     return true;
                 }
             }
@@ -938,7 +1013,7 @@ bool Position::blackInCheck() {
     for (int i = 0; i <= 4; ++i) {
         for (auto& j : bbToSquares(thePosition.at(i))) {
             for (auto& k : checkingSquares(intMap.at(i), j)) {
-                if (thePosition.at(pieceMap.at('k')) & squareToBit(k.substr(2, 2))) {
+                if (thePosition.at(pieceMap.at('k')) & k) {
                     return true;
                 }
             }
@@ -955,7 +1030,7 @@ bool Position::blackInCheckmate() {
     return (turn == 1 && blackInCheck() && legalMoves().size() == 0);
 }
 
-int Position::countBits(U64 num) const {
+int Position::countBits(U64 num) {
     int c = 0;
     while (num != 0) {
         c += num & 1ULL;
