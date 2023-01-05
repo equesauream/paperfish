@@ -1,5 +1,6 @@
 #include "position.h"
 #include "square.h"
+#include "piece.h"
 
 #include <sstream>
 #include <cmath>
@@ -54,11 +55,11 @@ Position::Position(const std::string& FEN) {
     thePosition = std::vector<U64>(12, 0);
 
 
-    for (auto& p : v) {
+    for (const auto& p : v) {
         U64 board = 0;
         int r = 0;
         int c = 0;
-        for (auto& pos : pieces) {
+        for (const auto& pos : pieces) {
             if (pos == '/') { 
                 ++r; 
                 c = 0;
@@ -84,7 +85,7 @@ Position::Position(const std::string& FEN) {
 
     castleRights = 0;
 
-    for (auto& c : castle) {
+    for (const auto& c : castle) {
         if (c == '-') break;
         if (c == 'K') castleRights += 1 << 3;
         if (c == 'Q') castleRights += 1 << 2;
@@ -95,9 +96,9 @@ Position::Position(const std::string& FEN) {
 
     // En Passent //
     if (enP == "-")
-        enPassent = NoSquare;
+        enPassant = NoSquare;
     else
-        enPassent = squareToBit(enP);
+        enPassant = squareToBit(enP);
 
 
     halfMove = std::stoi(hm);
@@ -113,7 +114,7 @@ Position::Position(const std::string& FEN) {
 
     Oturn = turn;
     OcastleRights = castleRights;
-    OenPassent = enPassent;
+    OenPassant = enPassant;
     OhalfMove = halfMove;
     OfullMove = fullMove;
 }
@@ -129,13 +130,13 @@ Position::Position(const Position& other) :
 
     turn {other.turn},
     castleRights {other.castleRights},
-    enPassent {other.enPassent},
+    enPassant {other.enPassant},
     halfMove {other.halfMove},
     fullMove {other.fullMove},
 
     Oturn {other.Oturn},
     OcastleRights {other.OcastleRights},
-    OenPassent {other.OenPassent},
+    OenPassant {other.OenPassant},
     OhalfMove {other.OhalfMove},
     OfullMove {other.OfullMove}
 {}
@@ -151,13 +152,13 @@ Position::Position(const Position&& other) :
 
     turn {other.turn},
     castleRights {other.castleRights},
-    enPassent {other.enPassent},
+    enPassant {other.enPassant},
     halfMove {other.halfMove},
     fullMove {other.fullMove},
 
     Oturn {other.Oturn},
     OcastleRights {other.OcastleRights},
-    OenPassent {other.OenPassent},
+    OenPassant {other.OenPassant},
     OhalfMove {other.OhalfMove},
     OfullMove {other.OfullMove}
 {}
@@ -173,13 +174,13 @@ Position& Position::operator=(Position other) {
 
     turn = std::move(other.turn);
     castleRights = std::move(other.castleRights);
-    enPassent = std::move(other.enPassent);
+    enPassant = std::move(other.enPassant);
     halfMove = std::move(other.halfMove);
     fullMove = std::move(other.fullMove);
 
     Oturn = std::move(other.Oturn);
     OcastleRights = std::move(other.OcastleRights);
-    OenPassent = std::move(other.OenPassent);
+    OenPassant = std::move(other.OenPassant);
     OhalfMove = std::move(other.OhalfMove);
     OfullMove = std::move(other.OfullMove);
     return *this;
@@ -191,7 +192,7 @@ std::string Position::toFEN() const {
     std::string tmp = std::string(64, '-');
     int count = 0;
     char c;
-    for (auto& board : thePosition) {
+    for (const auto& board : thePosition) {
         c = intMap.at(count);
 
         U64 cpy = board;
@@ -214,7 +215,6 @@ std::string Position::toFEN() const {
     }
 
     // remove consecutive `-`s
-
     std::vector<std::string> dashes = std::vector<std::string>{ "--------",
                                                                 "-------",
                                                                 "------",
@@ -225,7 +225,7 @@ std::string Position::toFEN() const {
                                                                 "-",
                                                                 };
 
-    for (auto& i : dashes) {
+    for (const auto& i : dashes) {
         int len = i.length();
         while (tmp.find(i) != std::string::npos) {
             tmp.replace(tmp.find(i), len, std::to_string(len));
@@ -253,7 +253,7 @@ std::string Position::toFEN() const {
 
     // en passent
     tmp += " ";
-    tmp += enPassent;
+    tmp += enPassant;
 
 
     // halfmoves
@@ -271,7 +271,7 @@ std::ostream& operator<<(std::ostream& out, const Position& pos) {
     std::vector<std::vector<char>> tmp = std::vector<std::vector<char>>(8, std::vector<char>(8, '-'));
     int count = 0;
     char c;
-    for (auto& board : pos.thePosition) {
+    for (const auto& board : pos.thePosition) {
         c = Position::intMap.at(count);
 
         U64 cpy = board;
@@ -287,8 +287,8 @@ std::ostream& operator<<(std::ostream& out, const Position& pos) {
         }
         ++count;
     }
-    for (auto& i : tmp) {
-        for (auto& j : i) {
+    for (const auto& i : tmp) {
+        for (const auto& j : i) {
             out << j;
         }
         out << '\n';
@@ -305,8 +305,7 @@ bool Position::isValidMove(const Move& m, char piece, char orig) {
     Square dest = m.dest;
     char prom = m.promotionPiece;
 
-    auto moves = possibleMoves(piece, source);
-    for (const auto& s : moves) {
+    for (const auto& s : possibleMoves(piece, source)) {
         if (s == m) goto NEXT;
     }
     return false;
@@ -317,13 +316,13 @@ bool Position::isValidMove(const Move& m, char piece, char orig) {
 
     if (piece == 'p') {
         if (colNumber(source) != colNumber(dest) && rowNumber(source) != rowNumber(dest)) {
-            if (dest != enPassent && (dest & whitePieces) == 0) return false;
+            if (dest != enPassant && (dest & whitePieces) == 0) return false;
         } else {
             if ((dest & blackPieces) != 0 || (dest & whitePieces) != 0) return false;
         }
     } else if (piece == 'P') {
         if (colNumber(source) != colNumber(dest) && rowNumber(source) != rowNumber(dest)) {
-            if (dest != enPassent && (dest & blackPieces) == 0) return false;
+            if (dest != enPassant && (dest & blackPieces) == 0) return false;
         } else {
             if ((dest & whitePieces) != 0 || (dest & blackPieces) != 0) return false;
         }
@@ -531,9 +530,8 @@ bool Position::isMoveBlocked(const Move& m) const {
 
 // pos is a square, e.g. "e4"
 std::vector<Move> Position::validMoves(char p, Square pos) {
-    auto moves = possibleMoves(p, pos);
     std::vector<Move> tmp;
-    for (auto& i : moves) {
+    for (const auto& i : possibleMoves(p, pos)) {
         if (isValid(i)) {
             tmp.push_back(i);
         }
@@ -823,8 +821,8 @@ std::vector<Move> Position::possibleMoves(char p, Square pos) const {
         return tmp;
     } else if (tolower(p) == 'q') {
         auto r = possibleMoves('r', pos);
-        auto b = possibleMoves('b', pos);
-        for (auto& i : b) {
+        const auto b = possibleMoves('b', pos);
+        for (const auto& i : b) {
             r.push_back(i);
         }
         for (auto& i : r) {
@@ -877,14 +875,14 @@ std::vector<Square> Position::checkingSquares(char p, Square pos) const {
     std::vector<Move> tmp = possibleMoves(p, pos);
     if (tolower(p) == 'n') {
         std::vector<Square> r;
-        for (auto& i : tmp) {
+        for (const auto& i : tmp) {
             r.push_back(i.dest);
         }
         return r;
     }
 
     std::vector<Square> cpy;
-    for (auto& i : tmp) {
+    for (const auto& i : tmp) {
         if (!isMoveBlocked(i) && 
             !(tolower(p) == 'p' && colNumber(i.source) == colNumber(i.dest))) {
             cpy.push_back(i.dest);
@@ -893,27 +891,13 @@ std::vector<Square> Position::checkingSquares(char p, Square pos) const {
     return cpy;
 }
 
-std::vector<Square> Position::bbToSquares(U64 board) {
-    if (board == 0) return std::vector<Square>();
-    std::vector<Square> bitSquares;
-    int c = 63;
-    while (board != 0) {
-        if (board >= (1ULL << 63)) {
-            bitSquares.push_back(1ULL << c);
-        }
-        board <<= 1;
-        --c;
-    }
-    return bitSquares;
-}
-
 std::vector<Move> Position::legalMoves() {
     std::vector<Move> tmp;
     for (int i = 0; i < 12; ++i) {
         if ((i <= 5 && turn == true) ||
             (i >= 6 && turn == false)) continue;
-        for (auto& square : bbToSquares(thePosition.at(i))) {
-            for (auto& j : validMoves(intMap.at(i), square)) {
+        for (const auto& square : bbToSquares(thePosition.at(i))) {
+            for (const auto& j : validMoves(intMap.at(i), square)) {
                 tmp.push_back(j);
             }
         }
@@ -957,14 +941,14 @@ void Position::move(Move m) {
     }
 
     // if en passent
-    if (m.piece == 'P' && m.dest == enPassent) {
+    if (m.piece == 'P' && m.dest == enPassant) {
         thePosition.at(pieceMap.at('p')) &= ~(m.dest << 8);
-    } else if (m.piece == 'p' && m.dest == enPassent) {
+    } else if (m.piece == 'p' && m.dest == enPassant) {
         thePosition.at(pieceMap.at('P')) &= ~(m.dest >> 8);
     }
 
     turn = !turn;
-    enPassent = m.enPassentSquare;
+    enPassant = m.enPassantSquare;
     for (int i = 0; i < 4; ++i) {
         if ((m.castleRights & (1 << i)) == 0) {
             castleRights &= ~(1 << i);
@@ -985,21 +969,21 @@ void Position::move(Move m) {
 }
 
 void Position::unmove() {
-    thePosition = OthePosition;
-    whitePieces = OwhitePieces;
-    blackPieces = OblackPieces;
+    thePosition  = OthePosition;
+    whitePieces  = OwhitePieces;
+    blackPieces  = OblackPieces;
 
-    turn = Oturn;
+    turn         = Oturn;
     castleRights = OcastleRights;
-    enPassent = OenPassent;
-    halfMove = OhalfMove;
-    fullMove = OfullMove;    
+    enPassant    = OenPassant;
+    halfMove     = OhalfMove;
+    fullMove     = OfullMove;    
 }
 
 bool Position::whiteInCheck() {
     for (int i = 6; i <= 10; ++i) {
-        for (auto& j : bbToSquares(thePosition.at(i))) {
-            for (auto& k : checkingSquares(intMap.at(i), j)) {
+        for (const auto& j : bbToSquares(thePosition.at(i))) {
+            for (const auto& k : checkingSquares(intMap.at(i), j)) {
                 if (thePosition.at(pieceMap.at('K')) & k) {
                     return true;
                 }
@@ -1011,8 +995,8 @@ bool Position::whiteInCheck() {
 
 bool Position::blackInCheck() {
     for (int i = 0; i <= 4; ++i) {
-        for (auto& j : bbToSquares(thePosition.at(i))) {
-            for (auto& k : checkingSquares(intMap.at(i), j)) {
+        for (const auto& j : bbToSquares(thePosition.at(i))) {
+            for (const auto& k : checkingSquares(intMap.at(i), j)) {
                 if (thePosition.at(pieceMap.at('k')) & k) {
                     return true;
                 }
@@ -1030,60 +1014,26 @@ bool Position::blackInCheckmate() {
     return (turn == 1 && blackInCheck() && legalMoves().size() == 0);
 }
 
-int Position::countBits(U64 num) {
-    int c = 0;
-    while (num != 0) {
-        c += num & 1ULL;
-        num <<= 1;
-    }
-    return c;
-}
-
-int Position::materialCount() const {
-    int white = 0;
-    int black = 0;
-    std::map<char, int> values = std::map<char, int>{
-        std::pair<char, int>('P', 1),
-        std::pair<char, int>('N', 3),
-        std::pair<char, int>('B', 3),
-        std::pair<char, int>('R', 5),
-        std::pair<char, int>('Q', 9),
-        std::pair<char, int>('p', 1),
-        std::pair<char, int>('n', 3),
-        std::pair<char, int>('b', 3),
-        std::pair<char, int>('r', 5),
-        std::pair<char, int>('q', 9)
-    };
-
-    for (int i = 0; i <= 4; ++i) {
-        white += bbToSquares(thePosition.at(i)).size() * values.at(intMap.at(i));
-    }
-    for (int i = 6; i <= 10; ++i) {
-        black += bbToSquares(thePosition.at(i)).size() * values.at(intMap.at(i));
-    }
-    return white - black;
-}
-
 void Position::updateBoards() {
-    whitePieces = thePosition.at(0) | thePosition.at(1) |
-                  thePosition.at(2) | thePosition.at(3) |
-                  thePosition.at(4) | thePosition.at(5);
+    whitePieces = thePosition.at(0)  | thePosition.at(1) |
+                  thePosition.at(2)  | thePosition.at(3) |
+                  thePosition.at(4)  | thePosition.at(5);
 
-    blackPieces = thePosition.at(6) | thePosition.at(7) |
-                  thePosition.at(8) | thePosition.at(9) |
+    blackPieces = thePosition.at(6)  | thePosition.at(7) |
+                  thePosition.at(8)  | thePosition.at(9) |
                   thePosition.at(10) | thePosition.at(11);
 }
 
 void Position::resetOriginal() {
-    OthePosition = thePosition;
-    OwhitePieces = whitePieces;
-    OblackPieces = blackPieces;
+    OthePosition  = thePosition;
+    OwhitePieces  = whitePieces;
+    OblackPieces  = blackPieces;
 
-    Oturn = turn;
+    Oturn         = turn;
     OcastleRights = castleRights;
-    OenPassent = enPassent;
-    OhalfMove = halfMove;
-    OfullMove = fullMove;
+    OenPassant    = enPassant;
+    OhalfMove     = halfMove;
+    OfullMove     = fullMove;
 }
 
 }

@@ -24,6 +24,11 @@ class Board {
 
     int perft(int n);
     void perftDivide(int n);  
+    
+
+    // P/p = 1, N/n = 3, B/b = 3, R/r = 5, Q/q = 9
+    // returns the material difference (positive = white, negative = black)
+    int materialCount() const;
 };
 
 }

@@ -14,13 +14,13 @@ int main () {
   Board b("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
   std::cout << b.current << '\n';
   //std::cout << b.current.castleRights.at('k');
-  int k = 3;
+  int k = 5;
   clock_t start_time = clock();
   //b.perftDivide(k);
   const auto perft_result = b.perft(k);
   std::cout << perft_result << '\n';
   start_time = clock() - start_time;
-  const auto elapsed_seconds = ((double)start_time) / CLOCKS_PER_SEC;
+  const auto elapsed_seconds = ((double) start_time) / CLOCKS_PER_SEC;
   std::cout << "Done in " << elapsed_seconds << " seconds\n";
 
   const auto positions_per_second = perft_result / elapsed_seconds;

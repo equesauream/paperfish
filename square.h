@@ -99,6 +99,13 @@ std::string bitToSquare(U64 bit);
 // O(1)
 U64 squareToBit(const std::string& s);
 
+// returns a vector of all set squares of a bitboard
+// O(1)
+std::vector<Square> bbToSquares(U64 board);
+
+// returns the number of set bits
+int countBits(U64 num);
+
 }
 
 #endif

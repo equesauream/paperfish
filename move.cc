@@ -24,11 +24,11 @@ Move::Move(Square s, Square d, char p, char prom) {
         castleRights &= ~(1 << 0);
 
     if (p == 'p' && rowNumber(source) == 7 && rowNumber(dest) == 5)
-        enPassentSquare = source << 8;
+        enPassantSquare = source << 8;
     else if (p == 'P' && rowNumber(source) == 2 && rowNumber(dest) == 4)
-        enPassentSquare = source >> 8;
+        enPassantSquare = source >> 8;
     else 
-        enPassentSquare = NoSquare;
+        enPassantSquare = NoSquare;
 }
 
 bool operator==(const Move& lhs, const Move& rhs) {
