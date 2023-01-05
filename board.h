@@ -11,21 +11,22 @@ typedef unsigned long long U64;
 namespace engine {
 
 class Board {
-  public:
-    Position current;
-    std::vector<Position> history;
-  public:
-    Board();
-    Board(const std::string& FEN);
-    ~Board();
+public:
+  Position current;
+  std::vector<Position> history;
 
-    void move(const Move& m);
-    void unmove();
+public:
+  Board();
+  Board(const std::string &FEN);
+  ~Board();
 
-    int perft(int n);
-    void perftDivide(int n);  
+  void move(const Move &m);
+  void unmove();
+
+  int perft(int n);
+  void perftDivide(int n);
 };
 
-}
+} // namespace engine
 
 #endif
