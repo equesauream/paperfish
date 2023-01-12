@@ -22,7 +22,7 @@ std::string spaceSplit(std::string& line) {
 }
 
 int main() {
-    //initZobristTables();
+    initZobristTables();
     std::string flag;
     
     Board game = Board();
@@ -115,6 +115,7 @@ int main() {
 
                 continue;
             }
+
 
             std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
         } else if (first == "stop") {

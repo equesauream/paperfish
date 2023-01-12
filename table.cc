@@ -7,26 +7,31 @@ namespace Zobrist {
 
     Key table[12][64];
     Key enPassant[64];
-    Key castling[0b1111];
+    Key castling[0b1111 + 1];
     Key blackToMove;
 }
 
-void initZobristTables() {
-    std::random_device rd;
-    // mersenne twister
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<U64> distrib(0, (1ULL << 63));
+std::random_device rd;
+// mersenne twister
+std::mt19937 gen(rd());
 
-    for (int i = 0; i <= 11; ++i) {
-        for (int j = 0; i < 64; ++j) {
-            Zobrist::table[i][j] = distrib(gen);
-            Zobrist::enPassant[j] = distrib(gen);
-        }
-    }
-    for (int i = 0; i <= 0b1111; ++i) {
-        Zobrist::castling[i] = distrib(gen);
-    }
-    Zobrist::blackToMove = distrib(gen);
+Key randomKey() {
+    std::uniform_int_distribution<Key> distrib(0, UINT64_MAX);
+    return distrib(gen);
+}
+
+void initZobristTables() {
+    for (int i = 0; i <= 11; ++i)
+        for (int j = 0; j < 64; ++j)
+            Zobrist::table[i][j] = randomKey();
+    
+    for (int i = 0; i < 64; ++i)
+        Zobrist::enPassant[i] = randomKey();
+    
+    for (int i = 0; i < 15; ++i) 
+        Zobrist::castling[i] = randomKey();
+
+    Zobrist::blackToMove = randomKey();
 }
 
 Key ZHash::operator()(const Position& p) const {
