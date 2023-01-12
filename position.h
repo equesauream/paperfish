@@ -10,7 +10,8 @@
 #include "move.h"
 
 using U64 = unsigned long long;
-using Square = long long unsigned;
+using Square = unsigned long long;
+using Key = unsigned long long;
 using Piece = int;
 /*
 
@@ -36,6 +37,10 @@ Order:
 namespace engine {
 
 class Position {
+  public:
+    Key key;
+    Key Okey;
+
   public:
     // the first 12 bitmaps (index 0-11) are the positions of the pieces in the standard order above
     std::vector<U64> thePosition;
@@ -84,6 +89,14 @@ class Position {
     // get the FEN of the current position
     std::string toFEN() const;
 
+    // for zobrist hashing
+    bool operator==(const Position &other) const;
+
+    
+    // given a string, return a Move
+    Move parseString(std::string s);
+
+
   public:
 
     // given a move m, check if it is a valid move wrt the current position
@@ -120,11 +133,26 @@ class Position {
     // reset the position
     void unmove();
 
+    // moves the position and updates the original
+    void advance(Move m);
+
     // returns if white/black is in check/checkmate
     bool whiteInCheck();
     bool blackInCheck();
     bool whiteInCheckmate();
     bool blackInCheckmate();
+
+    
+    // P/p = 100, N/n = 300, B/b = 300, R/r = 500, Q/q = 900
+    // returns the material difference (positive = white, negative = black)
+    int materialCount() const;
+    // get the heuristical value of a position
+  public:
+    // currently returns materialCount(), ideas to extend
+    // by examining pawn structure (connectedness, doubledness)
+    // also can tie to pressure imbalance detector
+    // and synergy with bishop (good/bad bishop)
+    int heurVal() const;
 
 
     friend std::ostream& operator<<(std::ostream& out, const Position& pos);

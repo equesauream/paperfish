@@ -6,7 +6,8 @@
 #include "move.h"
 #include "position.h"
 
-typedef unsigned long long U64;
+using U64 = unsigned long long;
+using Key = unsigned long long;
 
 namespace engine {
 
@@ -22,13 +23,29 @@ class Board {
     void move(const Move& m);
     void unmove();
 
-    int perft(int n);
-    void perftDivide(int n);  
-    
+    // search n ply or until quiescence
+    void searchMoves(int n);
 
-    // P/p = 1, N/n = 3, B/b = 3, R/r = 5, Q/q = 9
-    // returns the material difference (positive = white, negative = black)
-    int materialCount() const;
+    // quiescence search
+    int quiesce(int alpha, int beta);
+
+    int perft(int n);
+    void perftDivide(int n);
+
+  private:
+
+    // for quiescence checks
+    // currently just checking if the last move made was a capture,
+    // or if the current position is a check
+    // ideas to implement: check if a piece is hanging with future idea
+    // to extend to pressure imbalance detector
+    bool isQuiet();
+
+    // alpha-beta search
+    int alphabetaMax(int depth, int alpha, int beta);
+    int alphabetaMin(int depth, int alpha, int beta);
+
+    
 };
 
 }

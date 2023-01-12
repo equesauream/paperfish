@@ -16,14 +16,13 @@ char colNumber(Square s) {
     return 'a' + get_bit_index(s) % 8;
 }
 
-
 // a8 = bit 0
 // h8 = bit 7
 // a1 = bit 56
 // h8 = bit 63
 // converts a bit to a square
 std::string bitToSquare(U64 bit) {
-    const int pos = get_bit_index(bit);
+    const int pos = 63 - get_bit_index(bit);
     return std::string(1, char('h' - ((pos % 8)))) + std::to_string((pos / 8) + 1);
 }
 

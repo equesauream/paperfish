@@ -26,6 +26,84 @@ void Board::unmove() {
     history.pop_back();
 }
 
+// search n moves or until quiet
+void Board::searchMoves(int n) {
+
+}
+
+int Board::alphabetaMax(int depth, int alpha, int beta) {
+    if (depth == 0)
+        return quiesce(alpha, beta);
+    
+    for(const auto& m : current.legalMoves()) {
+        current.move(m);
+        int score = alphabetaMin(depth - 1, alpha, beta);
+        current.unmove();
+        if (score >= beta)    
+            return beta; // fail hard beta-cutoff
+        if (alpha < score)
+            alpha = score;
+    }
+    return alpha;
+}
+
+int Board::alphabetaMin(int depth, int alpha, int beta) {
+    if (depth == 0)
+        return -quiesce(alpha, beta);
+    
+    for(const auto& m : current.legalMoves()) {
+        current.move(m);
+        int score = alphabetaMax(depth - 1, alpha, beta);
+        current.unmove();
+        if (score <= alpha)
+            return alpha; // fail hard alpha-cutoff
+        if (alpha < beta)
+            beta = score;
+    }
+    return beta;
+}
+
+int Board::quiesce(int alpha, int beta) {
+    int standPat = current.heurVal();
+    if (standPat >= beta)
+        return beta;
+    if (alpha < standPat)
+        alpha = standPat;
+
+    for (const auto& m : current.legalMoves()) {
+        move(m);
+        if (isQuiet()) {
+            unmove();
+            continue;
+        }
+        int score = -quiesce(-beta, -alpha);
+        unmove();
+        if (score >= beta)
+            return beta;
+        if (score > alpha)
+            alpha = score;
+    }
+    return alpha;
+}
+
+bool Board::isQuiet() {
+    // last move resulted in check
+    if (current.blackInCheck() || current.whiteInCheck()) 
+        return false;
+    
+    // last move was capture
+    if (countBits(history.back().whitePieces | history.back().blackPieces) != 
+        countBits(current.whitePieces | current.blackPieces))
+        return false;
+
+    // last move resulted in large material swing
+    if (history.back().materialCount() - current.materialCount() <= -50 ||
+        history.back().materialCount() - current.materialCount() >= 50)
+        return false;
+    
+    return true;
+}
+
 int Board::perft(int n) {
     if (n == 0) {
         return 1;
@@ -65,31 +143,6 @@ void Board::perftDivide(int n) {
             }
         }
     }
-}
-
-int Board::materialCount() const {
-    int white = 0;
-    int black = 0;
-    std::map<char, int> values = std::map<char, int>{
-        std::pair<char, int>('P', 1),
-        std::pair<char, int>('N', 3),
-        std::pair<char, int>('B', 3),
-        std::pair<char, int>('R', 5),
-        std::pair<char, int>('Q', 9),
-        std::pair<char, int>('p', 1),
-        std::pair<char, int>('n', 3),
-        std::pair<char, int>('b', 3),
-        std::pair<char, int>('r', 5),
-        std::pair<char, int>('q', 9)
-    };
-
-    for (int i = 0; i <= 4; ++i) {
-        white += bbToSquares(current.thePosition.at(i)).size() * values.at(Position::intMap.at(i));
-    }
-    for (int i = 6; i <= 10; ++i) {
-        black += bbToSquares(current.thePosition.at(i)).size() * values.at(Position::intMap.at(i));
-    }
-    return white - black;
 }
 
 }

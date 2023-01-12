@@ -83,24 +83,22 @@ enum {
     H1 = 1ULL << 63,
 };
 
+// returns the index
+int get_bit_index(const Square s);
+
 // returns the row number of a square e.g. rowNumber(E7) == 7
-// O(1)
 int rowNumber(Square s);
 
 // returns the column number of a square e.g. colNumber(E7) == 'E'
-// O(1)
 char colNumber(Square s);
 
-// converts a bit (Square) to its string
-// O(1)
-std::string bitToSquare(U64 bit);
+// converts a Square to its string
+std::string bitToSquare(Square bit);
 
 // opposite of above
-// O(1)
 U64 squareToBit(const std::string& s);
 
 // returns a vector of all set squares of a bitboard
-// O(1)
 std::vector<Square> bbToSquares(U64 board);
 
 // returns the number of set bits

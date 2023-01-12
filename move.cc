@@ -1,10 +1,17 @@
 #include "move.h"
 #include "square.h"
+#include "position.h"
 #include <iostream>
 
 namespace engine {
 
-Move::Move(Square s, Square d, char p) : Move(s, d, p, '-') {}
+Move::Move() {
+    source = NoSquare;
+    dest = NoSquare;
+    piece = '-';
+    castleRights = 0b0000;
+    enPassantSquare = NoSquare;
+}
 
 Move::Move(Square s, Square d, char p, char prom) {
     piece = p;
@@ -42,5 +49,6 @@ std::ostream& operator<<(std::ostream& out, const Move& m) {
     
     return out;
 }
+
 }
 

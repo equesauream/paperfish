@@ -1,12 +1,13 @@
 #include "position.h"
 #include "square.h"
 #include "piece.h"
+#include "table.h"
 
 #include <sstream>
-#include <cmath>
 #include <bitset>
 #include <cctype>
 #include <iostream>
+#include <random>
 
 namespace engine {
 
@@ -267,6 +268,17 @@ std::string Position::toFEN() const {
     return tmp;
 }
 
+bool Position::operator==(const Position &other) const {
+    for(int i = 0; i < 12; ++i) {
+        if (thePosition.at(i) != other.thePosition.at(i))
+            return false;
+    }
+    if (enPassant != other.enPassant ||
+        castleRights != other.castleRights)
+        return false;
+    return true;
+}
+
 std::ostream& operator<<(std::ostream& out, const Position& pos) {
     std::vector<std::vector<char>> tmp = std::vector<std::vector<char>>(8, std::vector<char>(8, '-'));
     int count = 0;
@@ -294,6 +306,23 @@ std::ostream& operator<<(std::ostream& out, const Position& pos) {
         out << '\n';
     }
     return out;
+}
+
+Move Position::parseString(std::string s) {
+    Move m = Move();
+    m.source = squareToBit(s.substr(0, 2));
+    m.dest   = squareToBit(s.substr(2, 2));
+
+    for (int i = 0; i < 12; ++i) {
+        if (thePosition.at(i) & m.source)
+            m.piece = Position::intMap.at(i);
+    }
+
+    if (s.length() > 4 && turn == 0)
+        m.promotionPiece = toupper(s.at(4));
+    else if (s.length() > 4 && turn == 1)
+        m.promotionPiece = tolower(s.at(4));
+    return m;
 }
 
 bool Position::isValid(const Move& m) {
@@ -977,7 +1006,12 @@ void Position::unmove() {
     castleRights = OcastleRights;
     enPassant    = OenPassant;
     halfMove     = OhalfMove;
-    fullMove     = OfullMove;    
+    fullMove     = OfullMove;
+}
+
+void Position::advance(Move m) {
+    move(m);
+    resetOriginal();
 }
 
 bool Position::whiteInCheck() {
@@ -1034,6 +1068,35 @@ void Position::resetOriginal() {
     OenPassant    = enPassant;
     OhalfMove     = halfMove;
     OfullMove     = fullMove;
+}
+
+int Position::materialCount() const {
+    int white = 0;
+    int black = 0;
+    std::map<char, int> values = std::map<char, int>{
+        std::pair<char, int>('P', 100),
+        std::pair<char, int>('N', 300),
+        std::pair<char, int>('B', 300),
+        std::pair<char, int>('R', 500),
+        std::pair<char, int>('Q', 900),
+        std::pair<char, int>('p', 100),
+        std::pair<char, int>('n', 300),
+        std::pair<char, int>('b', 300),
+        std::pair<char, int>('r', 500),
+        std::pair<char, int>('q', 900)
+    };
+
+    for (int i = 0; i <= 4; ++i) {
+        white += bbToSquares(thePosition.at(i)).size() * values.at(Position::intMap.at(i));
+    }
+    for (int i = 6; i <= 10; ++i) {
+        black += bbToSquares(thePosition.at(i)).size() * values.at(Position::intMap.at(i));
+    }
+    return white - black;
+}
+
+int Position::heurVal() const {
+    return materialCount();
 }
 
 }
