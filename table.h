@@ -14,6 +14,9 @@ struct TTInfo {
     Move bestMove;
     int eval;
     int depth;
+
+    TTInfo();
+    TTInfo(Move m, int e, int d);
 };
 
 void initZobristTables();
@@ -23,6 +26,8 @@ struct ZHash {
 };
 
 TTInfo& at(const Position& p);
+
+inline std::unordered_map<Position, TTInfo, ZHash> transTable;
 
 }
 

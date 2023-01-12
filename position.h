@@ -20,15 +20,16 @@ top right = 8th bit
 bottom left = 57th bit
 bottom right = last bit
 
-0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0
+8   0 0 0 0 0 0 0 0
+7   0 0 0 0 0 0 0 0
+6   0 0 0 0 0 0 0 0
+5   0 0 0 0 0 0 0 0
+4   0 0 0 0 0 0 0 0
+3   0 0 0 0 0 0 0 0
+2   0 0 0 0 0 0 0 0
+1   0 0 0 0 0 0 0 0
 
+    A B C D E F G H
 Order:
     White: P N B R Q K
     Black: p n b r q k

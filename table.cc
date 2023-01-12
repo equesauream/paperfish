@@ -53,7 +53,12 @@ Key ZHash::operator()(const Position& p) const {
     return h;
 }
 
-std::unordered_map<Position, TTInfo, ZHash> transTable;
+TTInfo::TTInfo() {}
+
+TTInfo::TTInfo(Move m, int e, int d) :
+    bestMove{m},
+    eval{e},
+    depth{d} {}
 
 TTInfo& at(const Position& p) {
     if (transTable.count(p))

@@ -116,15 +116,15 @@ int main() {
                 continue;
             }
 
-
-            std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
+            game.searchMoves(3);
+            std::cout << "bestmove " << transTable.at(game.current).bestMove << '\n';
         } else if (first == "stop") {
             // stop calculating
             if (flag == "searchmoves") {
-                std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
+                std::cout << "bestmove " << transTable.at(game.current).bestMove << '\n';
                 flag = "";
             } else if (flag == "infinite") {
-                std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
+                std::cout << "bestmove " << transTable.at(game.current).bestMove << '\n';
                 flag = "";
             }
         } else if (first == "ponderhit") {
