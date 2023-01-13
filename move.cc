@@ -8,12 +8,12 @@ namespace engine {
 Move::Move() {
     source = 0;
     dest = 0;
-    piece = '-';
+    piece = NoPiece;
     castleRights = 0b0000;
     enPassantSquare = 0;
 }
 
-Move::Move(Square s, Square d, char p, char prom) {
+Move::Move(Square s, Square d, Piece p, Piece prom) {
     piece  = p;
     source = getSquareIndex(s);
     dest   = getSquareIndex(d);
@@ -30,9 +30,9 @@ Move::Move(Square s, Square d, char p, char prom) {
     if ((s | d) & (E8 | A8))
         castleRights &= ~(1 << 0);
 
-    if (p == 'p' && rowNumber(s) == 7 && rowNumber(d) == 5)
+    if (p == blackPawn && rowNumber(s) == 7 && rowNumber(d) == 5)
         enPassantSquare = s << 8;
-    else if (p == 'P' && rowNumber(s) == 2 && rowNumber(d) == 4)
+    else if (p == whitePawn && rowNumber(s) == 2 && rowNumber(d) == 4)
         enPassantSquare = s >> 8;
     else 
         enPassantSquare = 0;

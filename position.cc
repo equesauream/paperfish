@@ -18,7 +18,7 @@ const std::map<char, int> Position::pieceMap =
                         std::pair<char, int>('R', whiteRook), 
                         std::pair<char, int>('Q', whiteQueen), 
                         std::pair<char, int>('K', whiteKing), 
-                        std::pair<char, int>('b', blackPawn), 
+                        std::pair<char, int>('p', blackPawn), 
                         std::pair<char, int>('n', blackKnight), 
                         std::pair<char, int>('b', blackBishop), 
                         std::pair<char, int>('r', blackRook), 
@@ -243,11 +243,15 @@ std::string Position::toFEN() const {
     if (castleRights == 0) tmp += "-";
     else {
         for (int i = 0; i < 4; ++i) {
-            if (castleRights & (1 << 3)) {
-                if (i == 0) tmp += "K";
-                if (i == 1) tmp += "Q";
-                if (i == 2) tmp += "k";
-                if (i == 3) tmp += "q";
+            if (castleRights & (1 << i)) {
+                if (i == 0) 
+                    tmp += "K";
+                if (i == 1) 
+                    tmp += "Q";
+                if (i == 2) 
+                    tmp += "k";
+                if (i == 3) 
+                    tmp += "q";
             }
         }
     }

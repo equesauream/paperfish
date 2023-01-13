@@ -62,7 +62,7 @@ class Position {
     // 0 for white to move, 1 for black to move
     bool turn;
     // bitmask of 4 bits e.g. 1101 corresponds to KQq
-    int castleRights;
+    uint8_t castleRights;
     // stores the square of en passent, if available
     Square enPassant;
     // number of half moves since last pawn move or capture
@@ -72,7 +72,7 @@ class Position {
 
  private:
     bool Oturn;
-    int OcastleRights;
+    uint8_t OcastleRights;
     Square OenPassant;
     int OhalfMove;
     int OfullMove;

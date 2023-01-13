@@ -1,7 +1,7 @@
 all : main paperfish
 
 CXXFLAGS = -std=c++17 -Wall -MMD -Wextra -pedantic -g -Ofast -flto
-OBJECTS = position.o move.o board.o square.o table.o
+OBJECTS = position.o move.o board.o square.o table.o piece.o
 DEPENDS = ${OBJECTS:.o=.d}
 
 main : ${OBJECTS} main.o
