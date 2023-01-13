@@ -563,11 +563,14 @@ bool Position::isMoveBlocked(const Move& m) const {
 // pos is a square, e.g. "e4"
 std::vector<Move> Position::validMoves(char p, Square pos) {
     std::vector<Move> tmp;
-    for (const auto& i : possibleMoves(p, pos)) {
+    auto moves = possibleMoves(p, pos);
+    tmp.reserve(moves.size());
+    for (const auto& i : moves) {
         if (isValid(i)) {
             tmp.push_back(i);
         }
     }
+    tmp.shrink_to_fit();
     return tmp;
 }
 
@@ -745,6 +748,7 @@ std::vector<Move> Position::possibleMoves(char p, Square pos) const {
         return tmp;
     } else if (tolower(p) == 'n') {
         std::vector<Move> tmp;
+        tmp.reserve(8);
         if (colNumber(pos) > 'a' && rowNumber(pos) > 2)
             tmp.push_back(Move(pos, pos << 15, p));
 
@@ -769,9 +773,11 @@ std::vector<Move> Position::possibleMoves(char p, Square pos) const {
         if (colNumber(pos) < 'g' && rowNumber(pos) < 8)
             tmp.push_back(Move(pos, pos >> 6, p));
 
+        tmp.shrink_to_fit();
         return tmp;
     } else if (tolower(p) == 'b') {
         std::vector<Move> tmp;
+        tmp.reserve(13);
         char r = colNumber(pos);
         int c = rowNumber(pos);
         int i = 1;
@@ -811,9 +817,11 @@ std::vector<Move> Position::possibleMoves(char p, Square pos) const {
             tmp.push_back(Move(pos, pos >> i * 7, p));
             ++i;
         }
+        tmp.shrink_to_fit();
         return tmp;
     } else if (tolower(p) == 'r') {
         std::vector<Move> tmp;
+        tmp.reserve(14);
         char r = colNumber(pos);
         int c = rowNumber(pos);
         int i = 1;
@@ -850,9 +858,11 @@ std::vector<Move> Position::possibleMoves(char p, Square pos) const {
             ++i;
         }
 
+        tmp.shrink_to_fit();
         return tmp;
     } else if (tolower(p) == 'q') {
         auto r = possibleMoves('r', pos);
+        r.reserve(r.size() + 13);
         const auto b = possibleMoves('b', pos);
         for (const auto& i : b) {
             r.push_back(i);
@@ -860,9 +870,11 @@ std::vector<Move> Position::possibleMoves(char p, Square pos) const {
         for (auto& i : r) {
             i.piece = p;
         }
+        r.shrink_to_fit();
         return r;
     } else if (tolower(p) == 'k') {
         std::vector<Move> tmp;
+        tmp.reserve(8);
 
         if (colNumber(pos) > 'a')
             tmp.push_back(Move(pos, pos >> 1, p));
@@ -896,6 +908,7 @@ std::vector<Move> Position::possibleMoves(char p, Square pos) const {
             if (castleRights & (1 << 1) && pos == E8) tmp.push_back(Move(E8, G8, 'k'));
             if (castleRights & (1 << 0) && pos == E8) tmp.push_back(Move(E8, C8, 'k'));
         }
+        tmp.shrink_to_fit();
         return tmp;
         
     }
@@ -907,6 +920,7 @@ std::vector<Square> Position::checkingSquares(char p, Square pos) const {
     std::vector<Move> tmp = possibleMoves(p, pos);
     if (tolower(p) == 'n') {
         std::vector<Square> r;
+        r.reserve(8);
         for (const auto& i : tmp) {
             r.push_back(getSquare(i.dest));
         }
@@ -914,17 +928,20 @@ std::vector<Square> Position::checkingSquares(char p, Square pos) const {
     }
 
     std::vector<Square> cpy;
+    cpy.reserve(tmp.size());
     for (const auto& i : tmp) {
         if (!isMoveBlocked(i) && 
             !(tolower(p) == 'p' && colNumber(getSquare(i.source)) == colNumber(getSquare(i.dest)))) {
             cpy.push_back(getSquare(i.dest));
         }
     }
+    cpy.shrink_to_fit();
     return cpy;
 }
 
 std::vector<Move> Position::legalMoves() {
     std::vector<Move> tmp;
+    tmp.reserve(100);
     for (int i = 0; i < 12; ++i) {
         if ((i <= 5 && turn == true) ||
             (i >= 6 && turn == false)) continue;
@@ -934,6 +951,7 @@ std::vector<Move> Position::legalMoves() {
             }
         }
     }
+    tmp.shrink_to_fit();
     return tmp;
 }
 
