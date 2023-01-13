@@ -310,12 +310,15 @@ std::ostream& operator<<(std::ostream& out, const Position& pos) {
 
 Move Position::parseString(std::string s) {
     Move m = Move();
-    m.source = squareToBit(s.substr(0, 2));
-    m.dest   = squareToBit(s.substr(2, 2));
+    Square r = squareToBit(s.substr(0, 2));
+    Square d = squareToBit(s.substr(2, 2));
+    m.source = getSquareIndex(r);
+    m.dest   = getSquareIndex(d);
 
     for (int i = 0; i < 12; ++i) {
-        if (thePosition.at(i) & m.source)
+        if (thePosition.at(i) & r) {
             m.piece = Position::intMap.at(i);
+        }
     }
 
     if (s.length() > 4 && turn == 0)
@@ -330,8 +333,8 @@ bool Position::isValid(const Move& m) {
 }
 
 bool Position::isValidMove(const Move& m, char piece, char orig) {
-    Square source = m.source;
-    Square dest = m.dest;
+    Square source = getSquare(m.source);
+    Square dest   = getSquare(m.dest);
     char prom = m.promotionPiece;
 
     for (const auto& s : possibleMoves(piece, source)) {
@@ -494,9 +497,9 @@ bool Position::isValidMove(const Move& m, char piece, char orig) {
 
 // source and dest are 2-length strings
 bool Position::isMoveBlocked(const Move& m) const {
-    Square source = m.source;
-    Square dest = m.dest;
-    Square cur = source;
+    Square source = getSquare(m.source);
+    Square dest   = getSquare(m.dest);
+    Square cur    = source;
     if (colNumber(source) == colNumber(dest) && rowNumber(source) <= rowNumber(dest)) {
         cur >>= 8;
         while (cur != dest) {
@@ -905,7 +908,7 @@ std::vector<Square> Position::checkingSquares(char p, Square pos) const {
     if (tolower(p) == 'n') {
         std::vector<Square> r;
         for (const auto& i : tmp) {
-            r.push_back(i.dest);
+            r.push_back(getSquare(i.dest));
         }
         return r;
     }
@@ -913,8 +916,8 @@ std::vector<Square> Position::checkingSquares(char p, Square pos) const {
     std::vector<Square> cpy;
     for (const auto& i : tmp) {
         if (!isMoveBlocked(i) && 
-            !(tolower(p) == 'p' && colNumber(i.source) == colNumber(i.dest))) {
-            cpy.push_back(i.dest);
+            !(tolower(p) == 'p' && colNumber(getSquare(i.source)) == colNumber(getSquare(i.dest)))) {
+            cpy.push_back(getSquare(i.dest));
         }
     }
     return cpy;
@@ -935,49 +938,51 @@ std::vector<Move> Position::legalMoves() {
 }
 
 void Position::move(Move m) {
+    Square s = getSquare(m.source);
+    Square d = getSquare(m.dest);
     // set the source bit to 0
-    thePosition.at(pieceMap.at(m.piece)) &= ~m.source;
+    thePosition.at(pieceMap.at(m.piece)) &= ~s;
     
     // set all destination bits to 0
     for (auto& board : thePosition) {
-        board &= ~m.dest;
+        board &= ~d;
     }
 
     // set the destination bit of the moving piece to 1
-    thePosition.at(pieceMap.at(m.piece)) |= m.dest;
+    thePosition.at(pieceMap.at(m.piece)) |= d;
 
     // if promotion
     if (m.promotionPiece != '-') {
         // set the destination square of the pawn to 0
-        thePosition.at(pieceMap.at(m.piece)) &= ~m.dest;
+        thePosition.at(pieceMap.at(m.piece)) &= ~d;
 
-        thePosition.at(pieceMap.at(m.promotionPiece)) |= m.dest;
+        thePosition.at(pieceMap.at(m.promotionPiece)) |= d;
     }
 
     // if castle
-    if (m.piece == 'K' && m.source == E1 && m.dest == G1) {
+    if (m.piece == 'K' && s == E1 && d == G1) {
         thePosition.at(pieceMap.at('R')) &= ~H1;
         thePosition.at(pieceMap.at('R')) |= F1;
-    } else if (m.piece == 'K' && m.source == E1 && m.dest == C1) {
+    } else if (m.piece == 'K' && s == E1 && d == C1) {
         thePosition.at(pieceMap.at('R')) &= ~A1;
         thePosition.at(pieceMap.at('R')) |= D1;
-    } else if (m.piece == 'k' && m.source == E8 && m.dest == G8) {
+    } else if (m.piece == 'k' && s == E8 && d == G8) {
         thePosition.at(pieceMap.at('r')) &= ~H8;
         thePosition.at(pieceMap.at('r')) |= F8;
-    } else if (m.piece == 'k' && m.source == E8 && m.dest == C8) {
+    } else if (m.piece == 'k' && s == E8 && d == C8) {
         thePosition.at(pieceMap.at('r')) &= ~A8;
         thePosition.at(pieceMap.at('r')) |= D8;
     }
 
     // if en passent
-    if (m.piece == 'P' && m.dest == enPassant) {
-        thePosition.at(pieceMap.at('p')) &= ~(m.dest << 8);
+    if (m.piece == 'P' && d == enPassant) {
+        thePosition.at(pieceMap.at('p')) &= ~(d << 8);
     } else if (m.piece == 'p' && m.dest == enPassant) {
-        thePosition.at(pieceMap.at('P')) &= ~(m.dest >> 8);
+        thePosition.at(pieceMap.at('P')) &= ~(d >> 8);
     }
 
     turn = !turn;
-    enPassant = m.enPassantSquare;
+    enPassant = getSquare(m.enPassantSquare);
     for (int i = 0; i < 4; ++i) {
         if ((m.castleRights & (1 << i)) == 0) {
             castleRights &= ~(1 << i);
@@ -994,7 +999,8 @@ void Position::move(Move m) {
         ++halfMove;
     }
 
-    if (tolower(m.piece) == m.piece) ++fullMove;
+    if (tolower(m.piece) == m.piece) 
+        ++fullMove;
 }
 
 void Position::unmove() {

@@ -6,36 +6,36 @@
 namespace engine {
 
 Move::Move() {
-    source = NoSquare;
-    dest = NoSquare;
+    source = 0;
+    dest = 0;
     piece = '-';
     castleRights = 0b0000;
-    enPassantSquare = NoSquare;
+    enPassantSquare = 0;
 }
 
 Move::Move(Square s, Square d, char p, char prom) {
-    piece = p;
-    source = s;
-    dest = d;
+    piece  = p;
+    source = getSquareIndex(s);
+    dest   = getSquareIndex(d);
     promotionPiece = prom;
 
     castleRights = 0b1111;
 
-    if (source == E1 || source == H1 || dest == E1 || dest == H1) 
+    if ((s | d) & (E1 | H1)) 
         castleRights &= ~(1 << 3);
-    if (source == E1 || source == A1 || dest == E1 || dest == A1) 
+    if ((s | d) & (E1 | A1)) 
         castleRights &= ~(1 << 2);
-    if (source == E8 || source == H8 || dest == E8 || dest == H8) 
+    if ((s | d) & (E8 | H8)) 
         castleRights &= ~(1 << 1);
-    if (source == E8 || source == A8 || dest == E8 || dest == A8) 
+    if ((s | d) & (E8 | A8))
         castleRights &= ~(1 << 0);
 
-    if (p == 'p' && rowNumber(source) == 7 && rowNumber(dest) == 5)
-        enPassantSquare = source << 8;
-    else if (p == 'P' && rowNumber(source) == 2 && rowNumber(dest) == 4)
-        enPassantSquare = source >> 8;
+    if (p == 'p' && rowNumber(s) == 7 && rowNumber(d) == 5)
+        enPassantSquare = s << 8;
+    else if (p == 'P' && rowNumber(s) == 2 && rowNumber(d) == 4)
+        enPassantSquare = s >> 8;
     else 
-        enPassantSquare = NoSquare;
+        enPassantSquare = 0;
 }
 
 bool operator==(const Move& lhs, const Move& rhs) {
@@ -43,9 +43,9 @@ bool operator==(const Move& lhs, const Move& rhs) {
 }
 
 std::ostream& operator<<(std::ostream& out, const Move& m) {
-    out << bitToSquare(m.source) << bitToSquare(m.dest);
+    out << bitToSquare(getSquare(m.source)) << bitToSquare(getSquare(m.dest));
     if (m.promotionPiece != '-')
-        out << tolower(m.promotionPiece);
+        out << (char) tolower(m.promotionPiece);
     
     return out;
 }

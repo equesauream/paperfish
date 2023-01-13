@@ -103,7 +103,7 @@ class Position {
     // given a move m, check if it is a valid move wrt the current position
     bool isValid(const Move& m);
     // private helper method
-  private:
+  //private:
     bool isValidMove(const Move& m, char piece, char orig);
     // private method to check if a move is blocked
     bool isMoveBlocked(const Move& m) const;
@@ -116,7 +116,7 @@ class Position {
     std::vector<Move> validMoves(char p, Square pos);
     // returns a list of squares that are attacked by a piece p at square pos
     // private method
-  private:
+  //private:
     std::vector<Square> checkingSquares(char p, Square pos) const;
     // returns a list of all legal moves at the current position
   public:

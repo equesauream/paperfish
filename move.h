@@ -14,14 +14,14 @@ using Square = unsigned long long;
 namespace engine {
 
 struct Move {
-    Square source;
-    Square dest;
+    SquareIndex source;
+    SquareIndex dest;
     char piece;
 
     // bitmask of 4 bits e.g. 1101 for KQq
-    int castleRights; // true for enabled
+    uint8_t castleRights; // true for enabled
     // enabled if a pawn takes a double step, NoSquare if not
-    Square enPassantSquare;
+    SquareIndex enPassantSquare;
     // defaults if no promotion piece is '-'
     char promotionPiece = '-';
     
