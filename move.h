@@ -25,11 +25,11 @@ struct Move {
     // enabled if a pawn takes a double step, NoSquare if not
     SquareIndex enPassantSquare;
     // defaults if no promotion piece is '-'
-    Piece promotionPiece = '-';
+    Piece promotionPiece = NoPiece;
     
   public:
     Move();
-    Move(Square s, Square d, Piece piece, Piece prom = '-');
+    Move(Square s, Square d, Piece piece, Piece prom = NoPiece);
 };
 
 bool operator==(const Move& lhs, const Move& rhs);
