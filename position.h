@@ -54,7 +54,7 @@ class Position {
     U64 OwhitePieces;
     U64 OblackPieces;
   public:
-    // maps 'P' to 0, 'N' to 1, etc.
+    // maps whitePawn to 0, whiteKnight to 1, etc.
     static const std::map<char, Piece> pieceMap;
     // reverse of above
     static const std::map<Piece, char> intMap;

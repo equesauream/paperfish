@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <map>
 
 #include "square.h"
 #include "piece.h"
@@ -24,7 +23,7 @@ struct Move {
     uint8_t castleRights; // true for enabled
     // enabled if a pawn takes a double step, NoSquare if not
     SquareIndex enPassantSquare;
-    // defaults if no promotion piece is '-'
+    // defaults if no promotion piece is NoPiece
     Piece promotionPiece = NoPiece;
     
   public:

@@ -127,7 +127,7 @@ int Board::perft(int n) {
             if ((i <= 5 && current.turn == true) ||
                 (i >= 6 && current.turn == false)) continue;
             for (auto& square : bbToSquares(current.thePosition.at(i))) {
-                for (auto& m : current.validMoves(Position::intMap.at(i), square)) {
+                for (auto& m : current.validMoves(i, square)) {
                     move(m);
                     sum += perft(n - 1);
                     unmove();
@@ -150,7 +150,7 @@ void Board::perftDivide(int n) {
         if ((i <= 5 && current.turn == true) ||
             (i >= 6 && current.turn == false)) continue;
         for (auto& square : bbToSquares(current.thePosition.at(i))) {
-            for (auto& m : current.validMoves(Position::intMap.at(i), square)) {
+            for (auto& m : current.validMoves(i, square)) {
                 move(m);
                 std::cout << m << " " << perft(n - 1) << '\n';
                 unmove();

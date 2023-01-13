@@ -31,9 +31,9 @@ Move::Move(Square s, Square d, Piece p, Piece prom) {
         castleRights &= ~(1 << 0);
 
     if (p == blackPawn && rowNumber(s) == 7 && rowNumber(d) == 5)
-        enPassantSquare = s << 8;
+        enPassantSquare = getSquareIndex(s << 8);
     else if (p == whitePawn && rowNumber(s) == 2 && rowNumber(d) == 4)
-        enPassantSquare = s >> 8;
+        enPassantSquare = getSquareIndex(s >> 8);
     else 
         enPassantSquare = 0;
 }
@@ -44,7 +44,7 @@ bool operator==(const Move& lhs, const Move& rhs) {
 
 std::ostream& operator<<(std::ostream& out, const Move& m) {
     out << bitToSquare(getSquare(m.source)) << bitToSquare(getSquare(m.dest));
-    if (m.promotionPiece != '-')
+    if (m.promotionPiece != NoPiece)
         out << (char) tolower(Position::intMap.at(m.promotionPiece));
     
     return out;
