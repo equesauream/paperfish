@@ -49,7 +49,7 @@ Key ZHash::operator()(const Position& p) const {
     if (p.castleRights != 0)
         h ^= Zobrist::castling[p.castleRights];
     if (p.enPassant != NoSquare)
-        h ^= Zobrist::enPassant[get_bit_index(p.enPassant)];
+        h ^= Zobrist::enPassant[getSquareIndex(p.enPassant)];
     return h;
 }
 

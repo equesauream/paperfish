@@ -45,7 +45,7 @@ bool operator==(const Move& lhs, const Move& rhs) {
 std::ostream& operator<<(std::ostream& out, const Move& m) {
     out << bitToSquare(m.source) << bitToSquare(m.dest);
     if (m.promotionPiece != '-')
-        out << m.promotionPiece;
+        out << tolower(m.promotionPiece);
     
     return out;
 }

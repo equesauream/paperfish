@@ -1,14 +1,14 @@
 all : main paperfish
 
-CXXFLAGS = -std=c++17 -Wall -MMD -Wextra -pedantic -g -Ofast -flto
+CXXFLAGS = -std=c++17 -Wall -MMD -Wextra -pedantic -g -Ofast -flto -pg
 OBJECTS = position.o move.o board.o square.o table.o
 DEPENDS = ${OBJECTS:.o=.d}
 
 main : ${OBJECTS} main.o
-	${CXX} ${OBJECTS} main.o -o main
+	${CXX} ${OBJECTS} main.o -o main -pg
 
 paperfish : ${OBJECTS} paperfish.o
-	${CXX} ${OBJECTS} paperfish.o -o paperfish
+	${CXX} ${OBJECTS} paperfish.o -o paperfish -pg
 
 -include ${DEPENDS}
 

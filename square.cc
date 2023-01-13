@@ -5,15 +5,21 @@
 #include "square.h"
 
 namespace engine {
-    
-int get_bit_index(const Square s) { return __builtin_ctzll(s);}
+
+SquareIndex getSquareIndex(const Square s) { 
+    return (uint8_t) __builtin_ctzll(s);
+}
+
+Square getSquare(const SquareIndex s) {
+    return 1ULL << (s);
+}
 
 int rowNumber(Square s) {
-    return 8 - get_bit_index(s) / 8;
+    return 8 - getSquareIndex(s) / 8;
 }
 
 char colNumber(Square s) {
-    return 'a' + get_bit_index(s) % 8;
+    return 'a' + getSquareIndex(s) % 8;
 }
 
 // a8 = bit 0
@@ -21,8 +27,8 @@ char colNumber(Square s) {
 // a1 = bit 56
 // h8 = bit 63
 // converts a bit to a square
-std::string bitToSquare(U64 bit) {
-    const int pos = 63 - get_bit_index(bit);
+std::string bitToSquare(Square bit) {
+    const int pos = 63 - getSquareIndex(bit);
     return std::string(1, char('h' - ((pos % 8)))) + std::to_string((pos / 8) + 1);
 }
 
@@ -39,7 +45,7 @@ U64 squareToBit(const std::string& s) {
 std::vector<Square> bbToSquares(U64 board) {
     std::vector<Square> bitSquares;
     while (board != 0) {
-        bitSquares.push_back(1ULL << get_bit_index(board));
+        bitSquares.push_back(1ULL << getSquareIndex(board));
         board &= board - 1;
     }
     return bitSquares;

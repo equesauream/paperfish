@@ -1,9 +1,12 @@
 #ifndef SQUARE_H
 #define SQUARE_H
 
-typedef unsigned long long U64;
+#include <vector>
+#include <string>
 
+using U64 = unsigned long long;
 using Square = unsigned long long;
+using SquareIndex = uint8_t;
 
 namespace engine {
 
@@ -83,8 +86,11 @@ enum {
     H1 = 1ULL << 63,
 };
 
-// returns the index
-int get_bit_index(const Square s);
+// returns the index, i.e. 0-63, U64 --> uint8_t
+SquareIndex getSquareIndex(const Square s);
+
+// returns SquareIndex: uint8_t --> U64
+Square getSquare(const SquareIndex s);
 
 // returns the row number of a square e.g. rowNumber(E7) == 7
 int rowNumber(Square s);

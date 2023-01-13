@@ -2,6 +2,7 @@
 #include "move.h"
 #include "board.h"
 #include "table.h"
+#include "square.h"
 
 #include <cmath>
 #include <bitset>
@@ -15,8 +16,14 @@ int main () {
   Board b("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnpP/RNBQK2R b KQ - 1 8");
   b.move(b.current.parseString("g2g1n"));
   std::cout << b.current << '\n';
-  b.searchMoves(3);
-  std::cout << transTable.at(b.current).bestMove << '\n';
+  for (SquareIndex i = 0; i < 64; ++i) {
+  std::cout << getSquareIndex(getSquare(i)) << '\n';
+
+  }
+  
+  //b.searchMoves(6);
+  //b.perft(4);
+  //std::cout << transTable.at(b.current).bestMove << '\n';
 
   return 0;
 

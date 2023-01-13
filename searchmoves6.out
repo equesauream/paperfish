@@ -1,0 +1,337 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 27.90    108.45   108.45 2340484091     0.00     0.00  engine::Position::possibleMoves(char, unsigned long long) const
+ 13.72    161.76    53.32 8059332532     0.00     0.00  void std::vector<engine::Move, std::allocator<engine::Move> >::_M_realloc_insert<engine::Move const&>(__gnu_cxx::__normal_iterator<engine::Move*, std::vector<engine::Move, std::allocator<engine::Move> > >, engine::Move const&)
+ 12.07    208.67    46.91 21213767355     0.00     0.00  engine::Move::Move(unsigned long long, unsigned long long, char, char)
+  9.00    243.67    34.99 119504478     0.00     0.00  engine::Position::blackInCheck()
+  8.45    276.51    32.85 7168152462     0.00     0.00  void std::vector<unsigned long long, std::allocator<unsigned long long> >::_M_realloc_insert<unsigned long long const&>(__gnu_cxx::__normal_iterator<unsigned long long*, std::vector<unsigned long long, std::allocator<unsigned long long> > >, unsigned long long const&)
+  7.70    306.44    29.93 504218445     0.00     0.00  engine::Position::isMoveBlocked(engine::Move const&) const
+  6.71    332.50    26.06 170780649     0.00     0.00  engine::Position::move(engine::Move)
+  5.28    353.03    20.53 1801546444     0.00     0.00  engine::Position::checkingSquares(char, unsigned long long) const
+  2.64    363.30    10.27 31105542     0.00     0.00  engine::Position::whiteInCheck()
+  2.46    372.85     9.54 389070991     0.00     0.00  engine::Position::isValidMove(engine::Move const&, char, char)
+  1.21    377.55     4.70 17057704     0.00     0.00  engine::Position::materialCount() const
+  1.18    382.11     4.57                             std::__detail::_Map_base<engine::Position, std::pair<engine::Position const, engine::TTInfo>, std::allocator<std::pair<engine::Position const, engine::TTInfo> >, std::__detail::_Select1st, std::equal_to<engine::Position>, engine::ZHash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, false, true>, true>::at(engine::Position const&) [clone .constprop.0]
+  0.64    384.58     2.47  3114348     0.00     0.12  engine::Position::legalMoves()
+  0.36    386.00     1.42                             std::unordered_map<engine::Position, engine::TTInfo, engine::ZHash, std::equal_to<engine::Position>, std::allocator<std::pair<engine::Position const, engine::TTInfo> > >::~unordered_map()
+  0.21    386.80     0.80 170782115     0.00     0.00  engine::Position::updateBoards()
+  0.13    387.30     0.50                             engine::Board::move(engine::Move const&)
+  0.09    387.65     0.35 150610020     0.00     0.00  engine::Position::unmove()
+  0.08    387.97     0.32                             engine::Board::alphabetaMin(int, int, int)
+  0.08    388.27     0.30 51173118     0.00     0.00  std::_Rb_tree<char, std::pair<char const, int>, std::_Select1st<std::pair<char const, int> >, std::less<char>, std::allocator<std::pair<char const, int> > >::_M_erase(std::_Rb_tree_node<std::pair<char const, int> >*)
+  0.05    388.46     0.19                             std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&) [clone .constprop.0]
+  0.02    388.55     0.09 17207784     0.00     0.00  std::vector<unsigned long long, std::allocator<unsigned long long> >::operator=(std::vector<unsigned long long, std::allocator<unsigned long long> > const&)
+  0.02    388.61     0.06        3    20.01    20.01  engine::bitToSquare[abi:cxx11](unsigned long long)
+  0.01    388.65     0.04                             std::vector<engine::Position, std::allocator<engine::Position> >::~vector()
+  0.00    388.65     0.00      124     0.00     0.00  engine::Position::Position(engine::Position const&)
+  0.00    388.65     0.00       41     0.00     0.00  engine::Position::operator=(engine::Position)
+  0.00    388.65     0.00        4     0.00     0.00  std::map<char, int, std::less<char>, std::allocator<std::pair<char const, int> > >::~map()
+  0.00    388.65     0.00        3     0.00     0.00  std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > __gnu_cxx::__to_xstring<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, char>(int (*)(char*, unsigned long, char const*, __va_list_tag*), unsigned long, char const*, ...) [clone .constprop.0]
+  0.00    388.65     0.00        2     0.00     0.00  engine::squareToBit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+  0.00    388.65     0.00        1     0.00     0.00  engine::ZHash::operator()(engine::Position const&) const [clone .constprop.0]
+  0.00    388.65     0.00        1     0.00     0.00  engine::Position::operator==(engine::Position const&) const
+  0.00    388.65     0.00        1     0.00     0.00  std::_Hashtable<engine::Position, std::pair<engine::Position const, engine::TTInfo>, std::allocator<std::pair<engine::Position const, engine::TTInfo> >, std::__detail::_Select1st, std::equal_to<engine::Position>, engine::ZHash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, false, true> >::_M_find_before_node(unsigned long, engine::Position const&, unsigned long) const [clone .constprop.0]
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2020 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 0.00% of 388.65 seconds
+
+index % time    self  children    called     name
+                             2962847             engine::Board::alphabetaMin(int, int, int) [1]
+[1]     98.3    0.32  381.62       0+2962847 engine::Board::alphabetaMin(int, int, int) [1]
+                2.47  369.14 3114348/3114348     engine::Position::legalMoves() [2]
+                4.70    2.05 17057704/17057704     engine::Position::materialCount() const [13]
+                3.08    0.09 20170588/170780649     engine::Position::move(engine::Move) [12]
+                0.09    0.00 17207741/17207784     std::vector<unsigned long long, std::allocator<unsigned long long> >::operator=(std::vector<unsigned long long, std::allocator<unsigned long long> > const&) [21]
+                             2962847             engine::Board::alphabetaMin(int, int, int) [1]
+-----------------------------------------------
+                2.47  369.14 3114348/3114348     engine::Board::alphabetaMin(int, int, int) [1]
+[2]     95.6    2.47  369.14 3114348         engine::Position::legalMoves() [2]
+                9.54  353.00 389070991/389070991     engine::Position::isValidMove(engine::Move const&, char, char) [3]
+                2.83    2.57 60998525/2340484091     engine::Position::possibleMoves(char, unsigned long long) const [6]
+                0.96    0.00 145754988/8059332532     void std::vector<engine::Move, std::allocator<engine::Move> >::_M_realloc_insert<engine::Move const&>(__gnu_cxx::__normal_iterator<engine::Move*, std::vector<engine::Move, std::allocator<engine::Move> > >, engine::Move const&) [8]
+                0.24    0.00 51721468/7168152462     void std::vector<unsigned long long, std::allocator<unsigned long long> >::_M_realloc_insert<unsigned long long const&>(__gnu_cxx::__normal_iterator<unsigned long long*, std::vector<unsigned long long, std::allocator<unsigned long long> > >, unsigned long long const&) [10]
+-----------------------------------------------
+                             88868131             engine::Position::isValidMove(engine::Move const&, char, char) [3]
+                9.54  353.00 389070991/389070991     engine::Position::legalMoves() [2]
+[3]     93.3    9.54  353.00 389070991+88868131 engine::Position::isValidMove(engine::Move const&, char, char) [3]
+               34.99  175.54 119504478/119504478     engine::Position::blackInCheck() [5]
+               10.27   53.17 31105542/31105542     engine::Position::whiteInCheck() [7]
+               22.15   20.13 477939122/2340484091     engine::Position::possibleMoves(char, unsigned long long) const [6]
+               22.98    0.71 150610020/170780649     engine::Position::move(engine::Move) [12]
+               11.96    0.00 201517235/504218445     engine::Position::isMoveBlocked(engine::Move const&) const [11]
+                0.69    0.00 312261854/21213767355     engine::Move::Move(unsigned long long, unsigned long long, char, char) [9]
+                0.35    0.00 150610020/150610020     engine::Position::unmove() [18]
+                0.06    0.00       3/3           engine::bitToSquare[abi:cxx11](unsigned long long) [22]
+                             88868131             engine::Position::isValidMove(engine::Move const&, char, char) [3]
+-----------------------------------------------
+                4.78   46.74 419608737/1801546444     engine::Position::whiteInCheck() [7]
+               15.75  153.95 1381937707/1801546444     engine::Position::blackInCheck() [5]
+[4]     56.9   20.53  200.69 1801546444         engine::Position::checkingSquares(char, unsigned long long) const [4]
+               83.48   75.87 1801546444/2340484091     engine::Position::possibleMoves(char, unsigned long long) const [6]
+               23.38    0.00 5101658535/7168152462     void std::vector<unsigned long long, std::allocator<unsigned long long> >::_M_realloc_insert<unsigned long long const&>(__gnu_cxx::__normal_iterator<unsigned long long*, std::vector<unsigned long long, std::allocator<unsigned long long> > >, unsigned long long const&) [10]
+               17.97    0.00 302701210/504218445     engine::Position::isMoveBlocked(engine::Move const&) const [11]
+-----------------------------------------------
+               34.99  175.54 119504478/119504478     engine::Position::isValidMove(engine::Move const&, char, char) [3]
+[5]     54.2   34.99  175.54 119504478         engine::Position::blackInCheck() [5]
+               15.75  153.95 1381937707/1801546444     engine::Position::checkingSquares(char, unsigned long long) const [4]
+                5.84    0.00 1275410934/7168152462     void std::vector<unsigned long long, std::allocator<unsigned long long> >::_M_realloc_insert<unsigned long long const&>(__gnu_cxx::__normal_iterator<unsigned long long*, std::vector<unsigned long long, std::allocator<unsigned long long> > >, unsigned long long const&) [10]
+-----------------------------------------------
+                             606209256             engine::Position::possibleMoves(char, unsigned long long) const [6]
+                2.83    2.57 60998525/2340484091     engine::Position::legalMoves() [2]
+               22.15   20.13 477939122/2340484091     engine::Position::isValidMove(engine::Move const&, char, char) [3]
+               83.48   75.87 1801546444/2340484091     engine::Position::checkingSquares(char, unsigned long long) const [4]
+[6]     53.3  108.45   98.57 2340484091+606209256 engine::Position::possibleMoves(char, unsigned long long) const [6]
+               52.35    0.00 7913577544/8059332532     void std::vector<engine::Move, std::allocator<engine::Move> >::_M_realloc_insert<engine::Move const&>(__gnu_cxx::__normal_iterator<engine::Move*, std::vector<engine::Move, std::allocator<engine::Move> > >, engine::Move const&) [8]
+               46.22    0.00 20901505501/21213767355     engine::Move::Move(unsigned long long, unsigned long long, char, char) [9]
+                             606209256             engine::Position::possibleMoves(char, unsigned long long) const [6]
+-----------------------------------------------
+               10.27   53.17 31105542/31105542     engine::Position::isValidMove(engine::Move const&, char, char) [3]
+[7]     16.3   10.27   53.17 31105542         engine::Position::whiteInCheck() [7]
+                4.78   46.74 419608737/1801546444     engine::Position::checkingSquares(char, unsigned long long) const [4]
+                1.64    0.00 358356901/7168152462     void std::vector<unsigned long long, std::allocator<unsigned long long> >::_M_realloc_insert<unsigned long long const&>(__gnu_cxx::__normal_iterator<unsigned long long*, std::vector<unsigned long long, std::allocator<unsigned long long> > >, unsigned long long const&) [10]
+-----------------------------------------------
+                0.96    0.00 145754988/8059332532     engine::Position::legalMoves() [2]
+               52.35    0.00 7913577544/8059332532     engine::Position::possibleMoves(char, unsigned long long) const [6]
+[8]     13.7   53.32    0.00 8059332532         void std::vector<engine::Move, std::allocator<engine::Move> >::_M_realloc_insert<engine::Move const&>(__gnu_cxx::__normal_iterator<engine::Move*, std::vector<engine::Move, std::allocator<engine::Move> > >, engine::Move const&) [8]
+-----------------------------------------------
+                0.69    0.00 312261854/21213767355     engine::Position::isValidMove(engine::Move const&, char, char) [3]
+               46.22    0.00 20901505501/21213767355     engine::Position::possibleMoves(char, unsigned long long) const [6]
+[9]     12.1   46.91    0.00 21213767355         engine::Move::Move(unsigned long long, unsigned long long, char, char) [9]
+-----------------------------------------------
+                0.24    0.00 51721468/7168152462     engine::Position::legalMoves() [2]
+                1.64    0.00 358356901/7168152462     engine::Position::whiteInCheck() [7]
+                1.75    0.00 381004624/7168152462     engine::Position::materialCount() const [13]
+                5.84    0.00 1275410934/7168152462     engine::Position::blackInCheck() [5]
+               23.38    0.00 5101658535/7168152462     engine::Position::checkingSquares(char, unsigned long long) const [4]
+[10]     8.5   32.85    0.00 7168152462         void std::vector<unsigned long long, std::allocator<unsigned long long> >::_M_realloc_insert<unsigned long long const&>(__gnu_cxx::__normal_iterator<unsigned long long*, std::vector<unsigned long long, std::allocator<unsigned long long> > >, unsigned long long const&) [10]
+-----------------------------------------------
+               11.96    0.00 201517235/504218445     engine::Position::isValidMove(engine::Move const&, char, char) [3]
+               17.97    0.00 302701210/504218445     engine::Position::checkingSquares(char, unsigned long long) const [4]
+[11]     7.7   29.93    0.00 504218445         engine::Position::isMoveBlocked(engine::Move const&) const [11]
+-----------------------------------------------
+                0.00    0.00      41/170780649     engine::Board::move(engine::Move const&) [17]
+                3.08    0.09 20170588/170780649     engine::Board::alphabetaMin(int, int, int) [1]
+               22.98    0.71 150610020/170780649     engine::Position::isValidMove(engine::Move const&, char, char) [3]
+[12]     6.9   26.06    0.80 170780649         engine::Position::move(engine::Move) [12]
+                0.80    0.00 170782113/170782115     engine::Position::updateBoards() [16]
+-----------------------------------------------
+                4.70    2.05 17057704/17057704     engine::Board::alphabetaMin(int, int, int) [1]
+[13]     1.7    4.70    2.05 17057704         engine::Position::materialCount() const [13]
+                1.75    0.00 381004624/7168152462     void std::vector<unsigned long long, std::allocator<unsigned long long> >::_M_realloc_insert<unsigned long long const&>(__gnu_cxx::__normal_iterator<unsigned long long*, std::vector<unsigned long long, std::allocator<unsigned long long> > >, unsigned long long const&) [10]
+                0.30    0.00 51173112/51173118     std::_Rb_tree<char, std::pair<char const, int>, std::_Select1st<std::pair<char const, int> >, std::less<char>, std::allocator<std::pair<char const, int> > >::_M_erase(std::_Rb_tree_node<std::pair<char const, int> >*) [19]
+-----------------------------------------------
+                                                 <spontaneous>
+[14]     1.2    4.57    0.00                 std::__detail::_Map_base<engine::Position, std::pair<engine::Position const, engine::TTInfo>, std::allocator<std::pair<engine::Position const, engine::TTInfo> >, std::__detail::_Select1st, std::equal_to<engine::Position>, engine::ZHash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, false, true>, true>::at(engine::Position const&) [clone .constprop.0] [14]
+                0.00    0.00       1/1           engine::ZHash::operator()(engine::Position const&) const [clone .constprop.0] [43]
+                0.00    0.00       1/1           std::_Hashtable<engine::Position, std::pair<engine::Position const, engine::TTInfo>, std::allocator<std::pair<engine::Position const, engine::TTInfo> >, std::__detail::_Select1st, std::equal_to<engine::Position>, engine::ZHash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, false, true> >::_M_find_before_node(unsigned long, engine::Position const&, unsigned long) const [clone .constprop.0] [45]
+-----------------------------------------------
+                                                 <spontaneous>
+[15]     0.4    1.42    0.00                 std::unordered_map<engine::Position, engine::TTInfo, engine::ZHash, std::equal_to<engine::Position>, std::allocator<std::pair<engine::Position const, engine::TTInfo> > >::~unordered_map() [15]
+-----------------------------------------------
+                0.00    0.00       2/170782115     engine::Position::Position(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [24]
+                0.80    0.00 170782113/170782115     engine::Position::move(engine::Move) [12]
+[16]     0.2    0.80    0.00 170782115         engine::Position::updateBoards() [16]
+-----------------------------------------------
+                                                 <spontaneous>
+[17]     0.1    0.50    0.00                 engine::Board::move(engine::Move const&) [17]
+                0.00    0.00      41/170780649     engine::Position::move(engine::Move) [12]
+                0.00    0.00      41/17207784     std::vector<unsigned long long, std::allocator<unsigned long long> >::operator=(std::vector<unsigned long long, std::allocator<unsigned long long> > const&) [21]
+                0.00    0.00     124/124         engine::Position::Position(engine::Position const&) [39]
+                0.00    0.00      41/41          engine::Position::operator=(engine::Position) [40]
+-----------------------------------------------
+                0.35    0.00 150610020/150610020     engine::Position::isValidMove(engine::Move const&, char, char) [3]
+[18]     0.1    0.35    0.00 150610020         engine::Position::unmove() [18]
+-----------------------------------------------
+                             119403946             std::_Rb_tree<char, std::pair<char const, int>, std::_Select1st<std::pair<char const, int> >, std::less<char>, std::allocator<std::pair<char const, int> > >::_M_erase(std::_Rb_tree_node<std::pair<char const, int> >*) [19]
+                0.00    0.00       6/51173118     std::map<char, int, std::less<char>, std::allocator<std::pair<char const, int> > >::~map() [25]
+                0.30    0.00 51173112/51173118     engine::Position::materialCount() const [13]
+[19]     0.1    0.30    0.00 51173118+119403946 std::_Rb_tree<char, std::pair<char const, int>, std::_Select1st<std::pair<char const, int> >, std::less<char>, std::allocator<std::pair<char const, int> > >::_M_erase(std::_Rb_tree_node<std::pair<char const, int> >*) [19]
+                             119403946             std::_Rb_tree<char, std::pair<char const, int>, std::_Select1st<std::pair<char const, int> >, std::less<char>, std::allocator<std::pair<char const, int> > >::_M_erase(std::_Rb_tree_node<std::pair<char const, int> >*) [19]
+-----------------------------------------------
+                                                 <spontaneous>
+[20]     0.0    0.19    0.00                 std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&) [clone .constprop.0] [20]
+-----------------------------------------------
+                0.00    0.00       2/17207784     engine::Position::Position(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [24]
+                0.00    0.00      41/17207784     engine::Board::move(engine::Move const&) [17]
+                0.09    0.00 17207741/17207784     engine::Board::alphabetaMin(int, int, int) [1]
+[21]     0.0    0.09    0.00 17207784         std::vector<unsigned long long, std::allocator<unsigned long long> >::operator=(std::vector<unsigned long long, std::allocator<unsigned long long> > const&) [21]
+-----------------------------------------------
+                0.06    0.00       3/3           engine::Position::isValidMove(engine::Move const&, char, char) [3]
+[22]     0.0    0.06    0.00       3         engine::bitToSquare[abi:cxx11](unsigned long long) [22]
+                0.00    0.00       3/3           std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > __gnu_cxx::__to_xstring<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, char>(int (*)(char*, unsigned long, char const*, __va_list_tag*), unsigned long, char const*, ...) [clone .constprop.0] [41]
+-----------------------------------------------
+                                                 <spontaneous>
+[23]     0.0    0.04    0.00                 std::vector<engine::Position, std::allocator<engine::Position> >::~vector() [23]
+-----------------------------------------------
+                                                 <spontaneous>
+[24]     0.0    0.00    0.00                 engine::Position::Position(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [24]
+                0.00    0.00       4/4           std::map<char, int, std::less<char>, std::allocator<std::pair<char const, int> > >::~map() [25]
+                0.00    0.00       2/17207784     std::vector<unsigned long long, std::allocator<unsigned long long> >::operator=(std::vector<unsigned long long, std::allocator<unsigned long long> > const&) [21]
+                0.00    0.00       2/170782115     engine::Position::updateBoards() [16]
+-----------------------------------------------
+                0.00    0.00       4/4           engine::Position::Position(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [24]
+[25]     0.0    0.00    0.00       4         std::map<char, int, std::less<char>, std::allocator<std::pair<char const, int> > >::~map() [25]
+                0.00    0.00       6/51173118     std::_Rb_tree<char, std::pair<char const, int>, std::_Select1st<std::pair<char const, int> >, std::less<char>, std::allocator<std::pair<char const, int> > >::_M_erase(std::_Rb_tree_node<std::pair<char const, int> >*) [19]
+-----------------------------------------------
+                0.00    0.00     124/124         engine::Board::move(engine::Move const&) [17]
+[39]     0.0    0.00    0.00     124         engine::Position::Position(engine::Position const&) [39]
+-----------------------------------------------
+                0.00    0.00      41/41          engine::Board::move(engine::Move const&) [17]
+[40]     0.0    0.00    0.00      41         engine::Position::operator=(engine::Position) [40]
+-----------------------------------------------
+                0.00    0.00       3/3           engine::bitToSquare[abi:cxx11](unsigned long long) [22]
+[41]     0.0    0.00    0.00       3         std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > __gnu_cxx::__to_xstring<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, char>(int (*)(char*, unsigned long, char const*, __va_list_tag*), unsigned long, char const*, ...) [clone .constprop.0] [41]
+-----------------------------------------------
+                0.00    0.00       2/2           engine::Position::parseString(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) [46]
+[42]     0.0    0.00    0.00       2         engine::squareToBit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [42]
+-----------------------------------------------
+                0.00    0.00       1/1           std::__detail::_Map_base<engine::Position, std::pair<engine::Position const, engine::TTInfo>, std::allocator<std::pair<engine::Position const, engine::TTInfo> >, std::__detail::_Select1st, std::equal_to<engine::Position>, engine::ZHash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, false, true>, true>::at(engine::Position const&) [clone .constprop.0] [14]
+[43]     0.0    0.00    0.00       1         engine::ZHash::operator()(engine::Position const&) const [clone .constprop.0] [43]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Hashtable<engine::Position, std::pair<engine::Position const, engine::TTInfo>, std::allocator<std::pair<engine::Position const, engine::TTInfo> >, std::__detail::_Select1st, std::equal_to<engine::Position>, engine::ZHash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, false, true> >::_M_find_before_node(unsigned long, engine::Position const&, unsigned long) const [clone .constprop.0] [45]
+[44]     0.0    0.00    0.00       1         engine::Position::operator==(engine::Position const&) const [44]
+-----------------------------------------------
+                0.00    0.00       1/1           std::__detail::_Map_base<engine::Position, std::pair<engine::Position const, engine::TTInfo>, std::allocator<std::pair<engine::Position const, engine::TTInfo> >, std::__detail::_Select1st, std::equal_to<engine::Position>, engine::ZHash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, false, true>, true>::at(engine::Position const&) [clone .constprop.0] [14]
+[45]     0.0    0.00    0.00       1         std::_Hashtable<engine::Position, std::pair<engine::Position const, engine::TTInfo>, std::allocator<std::pair<engine::Position const, engine::TTInfo> >, std::__detail::_Select1st, std::equal_to<engine::Position>, engine::ZHash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, false, true> >::_M_find_before_node(unsigned long, engine::Position const&, unsigned long) const [clone .constprop.0] [45]
+                0.00    0.00       1/1           engine::Position::operator==(engine::Position const&) const [44]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2020 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+  [22] engine::bitToSquare[abi:cxx11](unsigned long long) (square.cc) [18] engine::Position::unmove() (position.cc) [15] std::unordered_map<engine::Position, engine::TTInfo, engine::ZHash, std::equal_to<engine::Position>, std::allocator<std::pair<engine::Position const, engine::TTInfo> > >::~unordered_map() (unordered_map.h)
+  [42] engine::squareToBit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (square.cc) [39] engine::Position::Position(engine::Position const&) (position.cc) [25] std::map<char, int, std::less<char>, std::allocator<std::pair<char const, int> > >::~map() (stl_map.h)
+   [9] engine::Move::Move(unsigned long long, unsigned long long, char, char) (move.cc) [40] engine::Position::operator=(engine::Position) (position.cc) [8] void std::vector<engine::Move, std::allocator<engine::Move> >::_M_realloc_insert<engine::Move const&>(__gnu_cxx::__normal_iterator<engine::Move*, std::vector<engine::Move, std::allocator<engine::Move> > >, engine::Move const&) (vector.tcc)
+   [1] engine::Board::alphabetaMin(int, int, int) (board.cc) [41] std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > __gnu_cxx::__to_xstring<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, char>(int (*)(char*, unsigned long, char const*, __va_list_tag*), unsigned long, char const*, ...) [clone .constprop.0] (string_conversions.h) [23] std::vector<engine::Position, std::allocator<engine::Position> >::~vector() (stl_vector.h)
+  [17] engine::Board::move(engine::Move const&) (board.cc) [43] engine::ZHash::operator()(engine::Position const&) const [clone .constprop.0] (table.cc) [10] void std::vector<unsigned long long, std::allocator<unsigned long long> >::_M_realloc_insert<unsigned long long const&>(__gnu_cxx::__normal_iterator<unsigned long long*, std::vector<unsigned long long, std::allocator<unsigned long long> > >, unsigned long long const&) (vector.tcc)
+   [2] engine::Position::legalMoves() (position.cc) [11] engine::Position::isMoveBlocked(engine::Move const&) const (position.cc) [21] std::vector<unsigned long long, std::allocator<unsigned long long> >::operator=(std::vector<unsigned long long, std::allocator<unsigned long long> > const&) (vector.tcc)
+   [3] engine::Position::isValidMove(engine::Move const&, char, char) (position.cc) [13] engine::Position::materialCount() const (position.cc) [20] std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<std::allocator<char> >(char const*, std::allocator<char> const&) [clone .constprop.0] (basic_string.h)
+   [5] engine::Position::blackInCheck() (position.cc) [6] engine::Position::possibleMoves(char, unsigned long long) const (position.cc) [19] std::_Rb_tree<char, std::pair<char const, int>, std::_Select1st<std::pair<char const, int> >, std::less<char>, std::allocator<std::pair<char const, int> > >::_M_erase(std::_Rb_tree_node<std::pair<char const, int> >*) (stl_tree.h)
+  [16] engine::Position::updateBoards() (position.cc) [4] engine::Position::checkingSquares(char, unsigned long long) const (position.cc) [14] std::__detail::_Map_base<engine::Position, std::pair<engine::Position const, engine::TTInfo>, std::allocator<std::pair<engine::Position const, engine::TTInfo> >, std::__detail::_Select1st, std::equal_to<engine::Position>, engine::ZHash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, false, true>, true>::at(engine::Position const&) [clone .constprop.0] (hashtable_policy.h)
+   [7] engine::Position::whiteInCheck() (position.cc) [44] engine::Position::operator==(engine::Position const&) const (position.cc)
+  [12] engine::Position::move(engine::Move) (position.cc) [45] std::_Hashtable<engine::Position, std::pair<engine::Position const, engine::TTInfo>, std::allocator<std::pair<engine::Position const, engine::TTInfo> >, std::__detail::_Select1st, std::equal_to<engine::Position>, engine::ZHash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, false, true> >::_M_find_before_node(unsigned long, engine::Position const&, unsigned long) const [clone .constprop.0] (hashtable.h)
