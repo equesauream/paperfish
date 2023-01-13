@@ -55,9 +55,9 @@ class Position {
     U64 OblackPieces;
   public:
     // maps 'P' to 0, 'N' to 1, etc.
-    static const std::map<char, int> pieceMap;
+    static const std::map<char, Piece> pieceMap;
     // reverse of above
-    static const std::map<int, char> intMap;
+    static const std::map<Piece, char> intMap;
 
     // 0 for white to move, 1 for black to move
     bool turn;
@@ -104,20 +104,20 @@ class Position {
     bool isValid(const Move& m);
     // private helper method
   //private:
-    bool isValidMove(const Move& m, char piece, char orig);
+    bool isValidMove(const Move& m, Piece piece, Piece orig);
     // private method to check if a move is blocked
     bool isMoveBlocked(const Move& m) const;
     // returns a list of possible moves for a piece p at square pos
     // i.e. the possible premoves you can make
     // private method
-    std::vector<Move> possibleMoves(char p, Square pos) const;
+    std::vector<Move> possibleMoves(Piece p, Square pos) const;
     // returns a list of valid moves wrt the current position
   public:
-    std::vector<Move> validMoves(char p, Square pos);
+    std::vector<Move> validMoves(Piece p, Square pos);
     // returns a list of squares that are attacked by a piece p at square pos
     // private method
   //private:
-    std::vector<Square> checkingSquares(char p, Square pos) const;
+    std::vector<Square> checkingSquares(Piece p, Square pos) const;
     // returns a list of all legal moves at the current position
   public:
     std::vector<Move> legalMoves();

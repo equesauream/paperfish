@@ -4,3 +4,4 @@ main
 .vscode/
 LichessBot/
 *.out
+gmon.out

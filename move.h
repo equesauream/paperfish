@@ -6,28 +6,30 @@
 #include <map>
 
 #include "square.h"
+#include "piece.h"
 class Position;
 
 typedef unsigned long long U64;
 using Square = unsigned long long;
+using Piece = int;
 
 namespace engine {
 
 struct Move {
     SquareIndex source;
     SquareIndex dest;
-    char piece;
+    Piece piece;
 
     // bitmask of 4 bits e.g. 1101 for KQq
     uint8_t castleRights; // true for enabled
     // enabled if a pawn takes a double step, NoSquare if not
     SquareIndex enPassantSquare;
     // defaults if no promotion piece is '-'
-    char promotionPiece = '-';
+    Piece promotionPiece = '-';
     
   public:
     Move();
-    Move(Square s, Square d, char piece, char prom = '-');
+    Move(Square s, Square d, Piece piece, Piece prom = '-');
 };
 
 bool operator==(const Move& lhs, const Move& rhs);
