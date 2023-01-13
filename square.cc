@@ -18,8 +18,8 @@ int rowNumber(Square s) {
     return 8 - getSquareIndex(s) / 8;
 }
 
-char colNumber(Square s) {
-    return 'a' + getSquareIndex(s) % 8;
+Col colNumber(Square s) {
+    return A + getSquareIndex(s) % 8;
 }
 
 // a8 = bit 0

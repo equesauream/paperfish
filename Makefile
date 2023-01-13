@@ -5,7 +5,7 @@ OBJECTS = position.o move.o board.o square.o table.o piece.o
 DEPENDS = ${OBJECTS:.o=.d}
 
 main : ${OBJECTS} main.o
-	${CXX} ${OBJECTS} main.o -o main -pg
+	${CXX} ${OBJECTS} main.o -o main
 
 paperfish : ${OBJECTS} paperfish.o
 	${CXX} ${OBJECTS} paperfish.o -o paperfish

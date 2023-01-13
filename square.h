@@ -6,6 +6,7 @@
 
 using U64 = unsigned long long;
 using Square = unsigned long long;
+using Col = int;
 using SquareIndex = uint8_t;
 
 namespace engine {
@@ -86,6 +87,17 @@ enum {
     H1 = 1ULL << 63,
 };
 
+enum {
+    A = 1,
+    B = 2,
+    C = 3,
+    D = 4,
+    E = 5,
+    F = 6,
+    G = 7,
+    H = 8
+};
+
 // returns the index, i.e. 0-63, U64 --> uint8_t
 SquareIndex getSquareIndex(const Square s);
 
@@ -95,8 +107,8 @@ Square getSquare(const SquareIndex s);
 // returns the row number of a square e.g. rowNumber(E7) == 7
 int rowNumber(Square s);
 
-// returns the column number of a square e.g. colNumber(E7) == 'E'
-char colNumber(Square s);
+// returns the column number of a square e.g. colNumber(E7) == E
+Col colNumber(Square s);
 
 // converts a Square to its string
 std::string bitToSquare(Square bit);
