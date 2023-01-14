@@ -1094,37 +1094,17 @@ void Position::resetOriginal() {
 int Position::materialCount() const {
     int white = 0;
     int black = 0;
-    
 
-    for (int i = 0; i <= 4; ++i) {
-        int value;
-        if (i == 0)
-            value = 100;
-        else if (i == 1) 
-            value = 300;
-        else if (i == 2)
-            value = 300;
-        else if (i == 3)
-            value = 500;
-        else if (i == 4)
-            value = 900;
-        white += bbToSquares(thePosition.at(i)).size() * value;
+    int val[12] = {
+        100 , 300 , 300 , 500 , 900 , 0,
+        -100, -300, -300, -500, -900, 0
+    };
+    
+    int value = 0;
+    for (int i = 0; i < 12; ++i) {
+        value += val[i] * __builtin_popcount(thePosition.at(i));
     }
-    for (int i = 6; i <= 10; ++i) {
-        int value;
-        if (i == 6)
-            value = 100;
-        else if (i == 7) 
-            value = 300;
-        else if (i == 8)
-            value = 300;
-        else if (i == 9)
-            value = 500;
-        else if (i == 10)
-            value = 900;
-        black += bbToSquares(thePosition.at(i)).size() * value;
-    }
-    return white - black;
+    return value;
 }
 
 int Position::heurVal() const {

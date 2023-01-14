@@ -1,5 +1,5 @@
 #ifndef MAGIC_H
-#define MAGIC_
+#define MAGIC_H
 
 #include <vector>
 

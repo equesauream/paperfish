@@ -15,7 +15,6 @@ using namespace magic;
 int main () {
 
   initMagics();
-  std::cout << "initialized magics\n";
 
   printBitboard(getAttacks(blackRook, A7, 0));
 

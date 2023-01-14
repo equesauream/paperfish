@@ -15,39 +15,141 @@ namespace engine {
 
 namespace magic {
 
-// magic numbers pulled from GunshipPenguin's Shallow Blue:
-// https://github.com/GunshipPenguin/shallow-blue/blob/c6d7e9615514a86533a9e0ffddfc96e058fc9cfd/src/attacks.h#L120
+// magic numbers pulled from Nathan Lo's Magnum Carl
+// https://github.com/nathanlo99/magnum_carl/blob/ff191fdcf343a3a9ff0c671777b2a7fecb662f77/magic.hpp#L203
 
 const U64 rookMagics[64] = {
-    0xa8002c000108020ULL,  0x6c00049b0002001ULL,  0x100200010090040ULL,  0x2480041000800801ULL, 0x280028004000800ULL,
-    0x900410008040022ULL,  0x280020001001080ULL,  0x2880002041000080ULL, 0xa000800080400034ULL, 0x4808020004000ULL,
-    0x2290802004801000ULL, 0x411000d00100020ULL,  0x402800800040080ULL,  0xb000401004208ULL,    0x2409000100040200ULL,
-    0x1002100004082ULL,    0x22878001e24000ULL,   0x1090810021004010ULL, 0x801030040200012ULL,  0x500808008001000ULL,
-    0xa08018014000880ULL,  0x8000808004000200ULL, 0x201008080010200ULL,  0x801020000441091ULL,  0x800080204005ULL,
-    0x1040200040100048ULL, 0x120200402082ULL,     0xd14880480100080ULL,  0x12040280080080ULL,   0x100040080020080ULL,
-    0x9020010080800200ULL, 0x813241200148449ULL,  0x491604001800080ULL,  0x100401000402001ULL,  0x4820010021001040ULL,
-    0x400402202000812ULL,  0x209009005000802ULL,  0x810800601800400ULL,  0x4301083214000150ULL, 0x204026458e001401ULL,
-    0x40204000808000ULL,   0x8001008040010020ULL, 0x8410820820420010ULL, 0x1003001000090020ULL, 0x804040008008080ULL,
-    0x12000810020004ULL,   0x1000100200040208ULL, 0x430000a044020001ULL, 0x280009023410300ULL,  0xe0100040002240ULL,
-    0x200100401700ULL,     0x2244100408008080ULL, 0x8000400801980ULL,    0x2000810040200ULL,    0x8010100228810400ULL,
-    0x2000009044210200ULL, 0x4080008040102101ULL, 0x40002080411d01ULL,   0x2005524060000901ULL, 0x502001008400422ULL,
-    0x489a000810200402ULL, 0x1004400080a13ULL,    0x4000011008020084ULL, 0x26002114058042ULL
+    0x0080002080400010ULL, // a1 (5 bits)
+    0x0040001000200040ULL, // b1 (4 bits)
+    0x0080100020008008ULL, // c1 (5 bits)
+    0x0080100008008004ULL, // d1 (5 bits)
+    0x0080080080040002ULL, // e1 (5 bits)
+    0x0100010002080400ULL, // f1 (5 bits)
+    0x0080008001000200ULL, // g1 (4 bits)
+    0x0100020080402100ULL, // h1 (6 bits)
+    0x0000800020400080ULL, // a2 (4 bits)
+    0x0000400020005000ULL, // b2 (4 bits)
+    0x0000801000200080ULL, // c2 (4 bits)
+    0x0000800800100080ULL, // d2 (4 bits)
+    0x0000800400080080ULL, // e2 (4 bits)
+    0x0000800200040080ULL, // f2 (4 bits)
+    0x0000800100020080ULL, // g2 (4 bits)
+    0x0000800040800100ULL, // h2 (4 bits)
+    0x0000208000400080ULL, // a3 (4 bits)
+    0x0000404000201000ULL, // b3 (4 bits)
+    0x0000808010002000ULL, // c3 (4 bits)
+    0x0000808008001000ULL, // d3 (4 bits)
+    0x0000808004000800ULL, // e3 (4 bits)
+    0x0000808002000400ULL, // f3 (4 bits)
+    0x0000010100020004ULL, // g3 (4 bits)
+    0x0000020000804401ULL, // h3 (5 bits)
+    0x0000208080004000ULL, // a4 (4 bits)
+    0x0000200040005000ULL, // b4 (4 bits)
+    0x0000100080200080ULL, // c4 (4 bits)
+    0x0000080080100080ULL, // d4 (4 bits)
+    0x0000040080080080ULL, // e4 (4 bits)
+    0x0000020080040080ULL, // f4 (4 bits)
+    0x0000010080800200ULL, // g4 (4 bits)
+    0x0000800080004100ULL, // h4 (4 bits)
+    0x0000204000800080ULL, // a5 (4 bits)
+    0x0000200040401000ULL, // b5 (4 bits)
+    0x0000100080802000ULL, // c5 (4 bits)
+    0x0000080080801000ULL, // d5 (4 bits)
+    0x0000040080800800ULL, // e5 (4 bits)
+    0x0000020080800400ULL, // f5 (4 bits)
+    0x0000020001010004ULL, // g5 (4 bits)
+    0x0000800040800100ULL, // h5 (4 bits)
+    0x0000204000808000ULL, // a6 (4 bits)
+    0x0000200040008080ULL, // b6 (4 bits)
+    0x0000100020008080ULL, // c6 (4 bits)
+    0x0000080010008080ULL, // d6 (4 bits)
+    0x0000040008008080ULL, // e6 (4 bits)
+    0x0000020004008080ULL, // f6 (4 bits)
+    0x0000010002008080ULL, // g6 (4 bits)
+    0x0000008100420004ULL, // h6 (5 bits)
+    0x0000204000800080ULL, // a7 (4 bits)
+    0x0000200040008080ULL, // b7 (4 bits)
+    0x0000100020008080ULL, // c7 (4 bits)
+    0x0000080010008080ULL, // d7 (4 bits)
+    0x0000040008008080ULL, // e7 (4 bits)
+    0x0000020004008080ULL, // f7 (4 bits)
+    0x0000800100020080ULL, // g7 (4 bits)
+    0x0000800041000080ULL, // h7 (4 bits)
+    0x0000208001004011ULL, // a8 (6 bits)
+    0x0001001080204001ULL, // b8 (6 bits)
+    0x0000090040102001ULL, // c8 (6 bits)
+    0x0000200500100009ULL, // d8 (6 bits)
+    0x0002000420100802ULL, // e8 (6 bits)
+    0x0001000804000201ULL, // f8 (5 bits)
+    0x0001000082000441ULL, // g8 (6 bits)
+    0x0000008021040042ULL, // h8 (6 bits)
 };
 
 const U64 bishopMagics[64] = {
-    0x89a1121896040240ULL, 0x2004844802002010ULL, 0x2068080051921000ULL, 0x62880a0220200808ULL, 0x4042004000000ULL,
-    0x100822020200011ULL,  0xc00444222012000aULL, 0x28808801216001ULL,   0x400492088408100ULL,  0x201c401040c0084ULL,
-    0x840800910a0010ULL,   0x82080240060ULL,      0x2000840504006000ULL, 0x30010c4108405004ULL, 0x1008005410080802ULL,
-    0x8144042209100900ULL, 0x208081020014400ULL,  0x4800201208ca00ULL,   0xf18140408012008ULL,  0x1004002802102001ULL,
-    0x841000820080811ULL,  0x40200200a42008ULL,   0x800054042000ULL,     0x88010400410c9000ULL, 0x520040470104290ULL,
-    0x1004040051500081ULL, 0x2002081833080021ULL, 0x400c00c010142ULL,    0x941408200c002000ULL, 0x658810000806011ULL,
-    0x188071040440a00ULL,  0x4800404002011c00ULL, 0x104442040404200ULL,  0x511080202091021ULL,  0x4022401120400ULL,
-    0x80c0040400080120ULL, 0x8040010040820802ULL, 0x480810700020090ULL,  0x102008e00040242ULL,  0x809005202050100ULL,
-    0x8002024220104080ULL, 0x431008804142000ULL,  0x19001802081400ULL,   0x200014208040080ULL,  0x3308082008200100ULL,
-    0x41010500040c020ULL,  0x4012020c04210308ULL, 0x208220a202004080ULL, 0x111040120082000ULL,  0x6803040141280a00ULL,
-    0x2101004202410000ULL, 0x8200000041108022ULL, 0x21082088000ULL,      0x2410204010040ULL,    0x40100400809000ULL,
-    0x822088220820214ULL,  0x40808090012004ULL,   0x910224040218c9ULL,   0x402814422015008ULL,  0x90014004842410ULL,
-    0x1000042304105ULL,    0x10008830412a00ULL,   0x2520081090008908ULL, 0x40102000a0a60140ULL,
+    0x0020011001004080ULL, // a1 (6 bits)
+    0x0004042802002000ULL, // b1 (6 bits)
+    0x0004010202000000ULL, // c1 (4 bits)
+    0x0004040080000000ULL, // d1 (3 bits)
+    0x0001104000000000ULL, // e1 (3 bits)
+    0x0000821040000000ULL, // f1 (4 bits)
+    0x0000821010040000ULL, // g1 (5 bits)
+    0x0000410090012000ULL, // h1 (6 bits)
+    0x0000080801080210ULL, // a2 (6 bits)
+    0x0000101002004840ULL, // b2 (6 bits)
+    0x0000040102020000ULL, // c2 (4 bits)
+    0x0000040400800000ULL, // d2 (3 bits)
+    0x0000011040000000ULL, // e2 (3 bits)
+    0x0000008210400000ULL, // f2 (4 bits)
+    0x0000004208044000ULL, // g2 (5 bits)
+    0x0000002404020800ULL, // h2 (5 bits)
+    0x0010800820080080ULL, // a3 (6 bits)
+    0x0011000802008400ULL, // b3 (6 bits)
+    0x0002001000220020ULL, // c3 (5 bits)
+    0x0000800802004000ULL, // d3 (4 bits)
+    0x0000800400a00000ULL, // e3 (4 bits)
+    0x0002000040500400ULL, // f3 (5 bits)
+    0x0000800208040200ULL, // g3 (5 bits)
+    0x0000800040480800ULL, // h3 (5 bits)
+    0x0004400004080800ULL, // a4 (5 bits)
+    0x0002200010010200ULL, // b4 (5 bits)
+    0x0001100001004200ULL, // c4 (5 bits)
+    0x0010040000401020ULL, // d4 (5 bits)
+    0x0000840000802000ULL, // e4 (4 bits)
+    0x000040800100a000ULL, // f4 (5 bits)
+    0x0001020000421000ULL, // g4 (5 bits)
+    0x0000404000840400ULL, // h4 (5 bits)
+    0x0008084000080200ULL, // a5 (5 bits)
+    0x0001082000020400ULL, // b5 (5 bits)
+    0x0000440200100020ULL, // c5 (5 bits)
+    0x0000020080080080ULL, // d5 (4 bits)
+    0x0008020400001100ULL, // e5 (5 bits)
+    0x0002004200010080ULL, // f5 (5 bits)
+    0x0008008100008800ULL, // g5 (5 bits)
+    0x0002008100002400ULL, // h5 (5 bits)
+    0x0000842008002000ULL, // a6 (5 bits)
+    0x0001080104001000ULL, // b6 (5 bits)
+    0x0000082088001000ULL, // c6 (5 bits)
+    0x0000002011000800ULL, // d6 (4 bits)
+    0x0000080100400400ULL, // e6 (4 bits)
+    0x0040008080800100ULL, // f6 (5 bits)
+    0x0010010104000108ULL, // g6 (6 bits)
+    0x0008008080840200ULL, // h6 (6 bits)
+    0x0001010802400000ULL, // a7 (5 bits)
+    0x0001010082200000ULL, // b7 (5 bits)
+    0x0000002084100000ULL, // c7 (4 bits)
+    0x0000000020880000ULL, // d7 (3 bits)
+    0x0000001002020000ULL, // e7 (3 bits)
+    0x0000040408020000ULL, // f7 (4 bits)
+    0x0010050808004000ULL, // g7 (6 bits)
+    0x0010040084004400ULL, // h7 (6 bits)
+    0x0000104808041000ULL, // a8 (6 bits)
+    0x0000002402021000ULL, // b8 (5 bits)
+    0x0000000020841000ULL, // c8 (4 bits)
+    0x0000000000208800ULL, // d8 (3 bits)
+    0x0000000010020200ULL, // e8 (3 bits)
+    0x0000000404080200ULL, // f8 (4 bits)
+    0x0000100401080220ULL, // g8 (6 bits)
+    0x0010020081020200ULL, // h8 (6 bits)
 };
 
 const int rookOccupancy[64] = {
@@ -79,38 +181,38 @@ U64 bishopMask[64];
 // bishop and rook are found in separate table
 U64 attacks[12][64];
 
-U64 rookAttacks[64][4096];
-U64 bishopAttacks[64][1024];
+U64 rookAttacks[64][4096] = {0};
+U64 bishopAttacks[64][1024] = {0};
 
 // s is 0-63
 Square rookHash(int s, U64 bitmask) {
-    return ((bitmask * rookMagics[s]) << (64 - rookOccupancy[s])) >> (64 - rookOccupancy[s]);
+    return (bitmask * rookMagics[s]) >> (64 - rookOccupancy[s]);
 }
 
 // s is 0-63
 Square bishopHash(int s, U64 bitmask) {
-    return ((bitmask * bishopMagics[s]) << (64 - bishopOccupancy[s])) >> (64 - bishopOccupancy[s]);
+    return (bitmask * bishopMagics[s]) >> (64 - bishopOccupancy[s]);
 }
 
 U64 getRookAttacks(Square s, U64 blockers) {
     Square cur = s;
-    U64 tmp;
-    while ((cur & blockers) != 0) {
+    U64 tmp = 0;
+    while ((cur & blockers) == 0 && (cur == s || (cur & rookMask[s]) != 0)) {
         tmp |= cur >> 1;
         cur >>= 1;
     }
     cur = s;
-    while ((cur & blockers) != 0) {
+    while ((cur & blockers) == 0 && (cur == s || (cur & rookMask[s]) != 0)) {
         tmp |= cur >> 8;
         cur >>= 8;
     }
     cur = s;
-    while ((cur & blockers) != 0) {
+    while ((cur & blockers) == 0 && (cur == s || (cur & rookMask[s]) != 0)) {
         tmp |= cur << 1;
         cur <<= 1;
     }
     cur = s;
-    while ((cur & blockers) != 0) {
+    while ((cur & blockers) == 0 && (cur == s || (cur & rookMask[s]) != 0)) {
         tmp |= cur << 8;
         cur <<= 8;
     }
@@ -119,23 +221,23 @@ U64 getRookAttacks(Square s, U64 blockers) {
 
 U64 getBishopAttacks(Square s, U64 blockers) {
     Square cur = s;
-    U64 tmp;
-    while ((cur & blockers) != 0) {
+    U64 tmp = 0;
+    while ((cur & blockers) == 0 && ((cur & bishopMask[s] & s) != 0)) {
         tmp |= cur >> 7;
         cur >>= 7;
     }
     cur = s;
-    while ((cur & blockers) != 0) {
+    while ((cur & blockers) == 0 && ((cur & bishopMask[s] & s) != 0)) {
         tmp |= cur >> 9;
         cur >>= 9;
     }
     cur = s;
-    while ((cur & blockers) != 0) {
+    while ((cur & blockers) == 0 && ((cur & bishopMask[s] & s) != 0)) {
         tmp |= cur << 7;
         cur <<= 7;
     }
     cur = s;
-    while ((cur & blockers) != 0) {
+    while ((cur & blockers) == 0 && ((cur & bishopMask[s] & s) != 0)) {
         tmp |= cur << 9;
         cur <<= 9;
     }
@@ -149,9 +251,12 @@ void initMagics() {
     initPawnAttacks();
     initKnightAttacks();
     initKingAttacks();
-    
     initBishopAttacks();
     initRookAttacks();
+
+  printBitboard(getRookAttacks(A7, 0));
+  std::cout << '\n';
+  printBitboard(getAttacks(blackRook, A7, 0));
 }
 
 // returns the powerset of its set bits
@@ -162,6 +267,7 @@ std::vector<U64> generateBlockers(U64 bits) {
         if(bits & (1ULL << bit)) {
             //iterate result, doubling its size
             int sz = result.size();
+            result.reserve(result.size() * 2);
             for(int i = 0; i < sz; ++i) {
                 result.push_back(result[i] | (1 << bit));
             }
@@ -193,6 +299,10 @@ void initBishopAttacks() {
             if (bishopAttacks[s][hashVal] != 0)
                 continue;
 
+            //printBitboard(hashVal);
+            //std::cout << '\n';
+            //printBitboard(getBishopAttacks(index, blocker & bishopMask[index]));
+            
             bishopAttacks[s][hashVal] = getBishopAttacks(index, blocker & bishopMask[index]);
         }
     }
