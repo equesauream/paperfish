@@ -60,7 +60,7 @@ class Position {
     static const std::map<Piece, char> intMap;
 
     // 0 for white to move, 1 for black to move
-    bool turn;
+    Colour turn;
     // bitmask of 4 bits e.g. 1101 corresponds to KQq
     uint8_t castleRights;
     // stores the square of en passent, if available

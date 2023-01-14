@@ -3,14 +3,25 @@
 #include "board.h"
 #include "table.h"
 #include "square.h"
+#include "magic.h"
 
 #include <cmath>
 #include <bitset>
 #include <time.h>
 
 using namespace engine;
+using namespace magic;
 
 int main () {
+
+  initMagics();
+  std::cout << "initialized magics\n";
+
+  printBitboard(getAttacks(blackRook, A7, 0));
+
+  return 0;
+
+
   //Board b;
   //Board b("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
   Board b("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");

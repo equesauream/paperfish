@@ -7,6 +7,7 @@
 using U64 = unsigned long long;
 using Square = unsigned long long;
 using Col = int;
+using Colour = bool;
 using SquareIndex = uint8_t;
 
 namespace engine {
@@ -96,6 +97,11 @@ enum {
     F = 6,
     G = 7,
     H = 8
+};
+
+enum {
+    White = 0,
+    Black = 1
 };
 
 // returns the index, i.e. 0-63, U64 --> uint8_t
