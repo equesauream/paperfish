@@ -195,24 +195,34 @@ Square bishopHash(int s, U64 bitmask) {
 }
 
 U64 getRookAttacks(Square s, U64 blockers) {
+    blockers &= ~s;
     Square cur = s;
+    int index = getSquareIndex(s);
     U64 tmp = 0;
-    while ((cur & blockers) == 0 && (cur == s || (cur & rookMask[s]) != 0)) {
+    while ((cur & blockers) == 0 && 
+           (cur == s || (cur & rookMask[index]) != 0) &&
+           colNumber(cur) > A) {
         tmp |= cur >> 1;
         cur >>= 1;
     }
     cur = s;
-    while ((cur & blockers) == 0 && (cur == s || (cur & rookMask[s]) != 0)) {
+    while ((cur & blockers) == 0 && 
+           (cur == s || (cur & rookMask[index]) != 0) &&
+           rowNumber(cur) < 8) {
         tmp |= cur >> 8;
         cur >>= 8;
     }
     cur = s;
-    while ((cur & blockers) == 0 && (cur == s || (cur & rookMask[s]) != 0)) {
+    while ((cur & blockers) == 0 && 
+           (cur == s || (cur & rookMask[index]) != 0) &&
+           colNumber(cur) < H) {
         tmp |= cur << 1;
         cur <<= 1;
     }
     cur = s;
-    while ((cur & blockers) == 0 && (cur == s || (cur & rookMask[s]) != 0)) {
+    while ((cur & blockers) == 0 && 
+           (cur == s || (cur & rookMask[index]) != 0) &&
+           rowNumber(cur) > 1) {
         tmp |= cur << 8;
         cur <<= 8;
     }
@@ -221,23 +231,32 @@ U64 getRookAttacks(Square s, U64 blockers) {
 
 U64 getBishopAttacks(Square s, U64 blockers) {
     Square cur = s;
+    int index = getSquareIndex(s);
     U64 tmp = 0;
-    while ((cur & blockers) == 0 && ((cur & bishopMask[s] & s) != 0)) {
+    while ((cur & blockers) == 0 && 
+           (cur == s || (cur & bishopMask[index]) != 0) &&
+           colNumber(cur) < H && rowNumber(cur) < 8) {
         tmp |= cur >> 7;
         cur >>= 7;
     }
     cur = s;
-    while ((cur & blockers) == 0 && ((cur & bishopMask[s] & s) != 0)) {
+    while ((cur & blockers) == 0 && 
+           (cur == s || (cur & bishopMask[index]) != 0) &&
+           colNumber(cur) > A && rowNumber(cur) < 8) {
         tmp |= cur >> 9;
         cur >>= 9;
     }
     cur = s;
-    while ((cur & blockers) == 0 && ((cur & bishopMask[s] & s) != 0)) {
+    while ((cur & blockers) == 0 && 
+           (cur == s || (cur & bishopMask[index]) != 0) &&
+           colNumber(cur) > A && rowNumber(cur) > 1) {
         tmp |= cur << 7;
         cur <<= 7;
     }
     cur = s;
-    while ((cur & blockers) == 0 && ((cur & bishopMask[s] & s) != 0)) {
+    while ((cur & blockers) == 0 && 
+           (cur == s || (cur & bishopMask[index]) != 0) &&
+           colNumber(cur) < H && rowNumber(cur) > 1) {
         tmp |= cur << 9;
         cur <<= 9;
     }
@@ -253,10 +272,6 @@ void initMagics() {
     initKingAttacks();
     initBishopAttacks();
     initRookAttacks();
-
-  printBitboard(getRookAttacks(A7, 0));
-  std::cout << '\n';
-  printBitboard(getAttacks(blackRook, A7, 0));
 }
 
 // returns the powerset of its set bits
@@ -269,7 +284,7 @@ std::vector<U64> generateBlockers(U64 bits) {
             int sz = result.size();
             result.reserve(result.size() * 2);
             for(int i = 0; i < sz; ++i) {
-                result.push_back(result[i] | (1 << bit));
+                result.push_back(result[i] | (1ULL << bit));
             }
         }
     }
@@ -282,10 +297,10 @@ void initRookAttacks() {
         Square s = getSquare(index);
         for (const auto& blocker : generateBlockers(rookMask[index])) {
             Square hashVal = rookHash(index, blocker & rookMask[index]);
-            if (rookAttacks[s][hashVal] != 0)
+            if (rookAttacks[index][hashVal] != 0)
                 continue;
 
-            rookAttacks[s][hashVal] = getRookAttacks(index, blocker & rookMask[index]);
+            rookAttacks[index][hashVal] = getRookAttacks(s, blocker & rookMask[index]);
         }
     }
 }
@@ -296,14 +311,10 @@ void initBishopAttacks() {
         Square s = getSquare(index);
         for (const auto& blocker : generateBlockers(bishopMask[index])) {
             Square hashVal = bishopHash(index, blocker & bishopMask[index]);
-            if (bishopAttacks[s][hashVal] != 0)
+            if (bishopAttacks[index][hashVal] != 0)
                 continue;
-
-            //printBitboard(hashVal);
-            //std::cout << '\n';
-            //printBitboard(getBishopAttacks(index, blocker & bishopMask[index]));
             
-            bishopAttacks[s][hashVal] = getBishopAttacks(index, blocker & bishopMask[index]);
+            bishopAttacks[index][hashVal] = getBishopAttacks(s, blocker & bishopMask[index]);
         }
     }
 }

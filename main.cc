@@ -16,9 +16,9 @@ int main () {
 
   initMagics();
 
-  printBitboard(getAttacks(blackRook, A7, 0));
+  // printBitboard(getAttacks(blackRook, A7, A8 | A7 | C7));
 
-  return 0;
+  //return 0;
 
 
   //Board b;
@@ -27,22 +27,7 @@ int main () {
   //b.move(b.current.parseString("d5d6"));
   //std::cout << b.current.toFEN() << '\n';
   std::cout << b.current << '\n';
-  //std::cout << b.current.isValidMove(Move(E8, C8, blackKing), blackKing, blackKing) << '\n';
-
-  //std::cout << b.current.isValidMove(Move(E1, F1, whiteKing), whiteKing, whiteKing) << '\n';
-  //std::cout << b.current.castleRights << '\n';
-  /*for (const auto& i : b.current.possibleMoves(blackKnight, B6)) {
-    std::cout << i << '\n';
-  }*/
-  //std::cout << b.perft(4) << '\n';
-  //b.perftDivide(2);
-  //b.searchMoves(6);
-  //b.perft(4);
-  //std::cout << transTable.at(b.current).bestMove << '\n';
-
-  //return 0;
-
-  //std::cout << b.current.castleRights.at('k');
+  
   int k = 4;
   clock_t start_time = clock();
   //b.perftDivide(k);

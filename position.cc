@@ -2,6 +2,7 @@
 #include "square.h"
 #include "piece.h"
 #include "table.h"
+#include "magic.h"
 
 #include <sstream>
 #include <bitset>
@@ -574,342 +575,28 @@ std::vector<Move> Position::validMoves(Piece p, Square pos) {
 
 // pos is a square, e.g. "e4"
 std::vector<Move> Position::possibleMoves(Piece p, Square pos) const {
-    if (p == blackPawn) {
-        std::vector<Move> tmp;
-        if (rowNumber(pos) == 7 && colNumber(pos) < H && colNumber(pos) > A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos << 8,  blackPawn),
-                    Move(pos, pos << 16, blackPawn),
-                    Move(pos, pos << 7,  blackPawn),
-                    Move(pos, pos << 9,  blackPawn)
-            };
-        } else if (rowNumber(pos) == 7 && colNumber(pos) == A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos << 8,  blackPawn),
-                    Move(pos, pos << 16, blackPawn),
-                    Move(pos, pos << 9,  blackPawn)
-            };
-        } else if (rowNumber(pos) == 7 && colNumber(pos) == H) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos << 8,  blackPawn),
-                    Move(pos, pos << 16, blackPawn),
-                    Move(pos, pos << 7,  blackPawn)
-            };
-        } else if (rowNumber(pos) == 2 && colNumber(pos) < H && colNumber(pos) > A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos << 8, blackPawn, blackKnight),
-                    Move(pos, pos << 8, blackPawn, blackBishop),
-                    Move(pos, pos << 8, blackPawn, blackRook),
-                    Move(pos, pos << 8, blackPawn, blackQueen),
-
-                    Move(pos, pos << 7, blackPawn, blackKnight),
-                    Move(pos, pos << 7, blackPawn, blackBishop),
-                    Move(pos, pos << 7, blackPawn, blackRook),
-                    Move(pos, pos << 7, blackPawn, blackQueen),
-
-                    Move(pos, pos << 9, blackPawn, blackKnight),
-                    Move(pos, pos << 9, blackPawn, blackBishop),
-                    Move(pos, pos << 9, blackPawn, blackRook),
-                    Move(pos, pos << 9, blackPawn, blackQueen),
-            };
-        } else if (rowNumber(pos) == 2 && colNumber(pos) == A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos << 8, blackPawn, blackKnight),
-                    Move(pos, pos << 8, blackPawn, blackBishop),
-                    Move(pos, pos << 8, blackPawn, blackRook),
-                    Move(pos, pos << 8, blackPawn, blackQueen),
-
-                    Move(pos, pos << 9, blackPawn, blackKnight),
-                    Move(pos, pos << 9, blackPawn, blackBishop),
-                    Move(pos, pos << 9, blackPawn, blackRook),
-                    Move(pos, pos << 9, blackPawn, blackQueen),
-            };
-        } else if (rowNumber(pos) == 2 && colNumber(pos) == H) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos << 8, blackPawn, blackKnight),
-                    Move(pos, pos << 8, blackPawn, blackBishop),
-                    Move(pos, pos << 8, blackPawn, blackRook),
-                    Move(pos, pos << 8, blackPawn, blackQueen),
-
-                    Move(pos, pos << 7, blackPawn, blackKnight),
-                    Move(pos, pos << 7, blackPawn, blackBishop),
-                    Move(pos, pos << 7, blackPawn, blackRook),
-                    Move(pos, pos << 7, blackPawn, blackQueen),
-            };
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) < H && colNumber(pos) > A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos << 8, blackPawn),
-                    Move(pos, pos << 7, blackPawn),
-                    Move(pos, pos << 9, blackPawn)
-            };
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) == H) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos << 8, blackPawn),
-                    Move(pos, pos << 7, blackPawn)
-            };
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) == A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos << 8, blackPawn),
-                    Move(pos, pos << 9, blackPawn)
-            };
+    U64 magic = magic::getAttacks(p, pos, whitePieces | blackPieces);
+    std::vector<Move> tmp;
+    tmp.reserve(24);
+    while (magic != 0) {
+        Square s = getSquare(__builtin_ctzll(magic));
+        if (p == blackPawn && rowNumber(s) == 1) {
+            tmp.push_back(Move(pos, s, p, blackKnight));
+            tmp.push_back(Move(pos, s, p, blackBishop));
+            tmp.push_back(Move(pos, s, p, blackRook));
+            tmp.push_back(Move(pos, s, p, blackQueen));
+        } else if (p == whitePawn && rowNumber(s) == 8) {
+            tmp.push_back(Move(pos, s, p, whiteKnight));
+            tmp.push_back(Move(pos, s, p, whiteBishop));
+            tmp.push_back(Move(pos, s, p, whiteRook));
+            tmp.push_back(Move(pos, s, p, whiteQueen));
         } else {
-            std::cout << "invalid black pawn position: " << bitToSquare(pos) << " " << colNumber(pos) << '\n';
+            tmp.push_back(Move(pos, s, p));
         }
-        return tmp;
-    } else if (p == whitePawn) {
-        std::vector<Move> tmp;
-        if (rowNumber(pos) == 2 && colNumber(pos) < H && colNumber(pos) > A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos >> 8,  whitePawn),
-                    Move(pos, pos >> 16, whitePawn),
-                    Move(pos, pos >> 7,  whitePawn),
-                    Move(pos, pos >> 9,  whitePawn)
-            };
-        } else if (rowNumber(pos) == 2 && colNumber(pos) == A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos >> 8,  whitePawn),
-                    Move(pos, pos >> 16, whitePawn),
-                    Move(pos, pos >> 7,  whitePawn)
-            };
-        } else if (rowNumber(pos) == 2 && colNumber(pos) == H) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos >> 8,  whitePawn),
-                    Move(pos, pos >> 16, whitePawn),
-                    Move(pos, pos >> 9,  whitePawn)
-            };
-        } else if (rowNumber(pos) == 7 && colNumber(pos) < H && colNumber(pos) > A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos >> 8, whitePawn, whiteKnight),
-                    Move(pos, pos >> 8, whitePawn, whiteBishop),
-                    Move(pos, pos >> 8, whitePawn, whiteRook),
-                    Move(pos, pos >> 8, whitePawn, whiteQueen),
-
-                    Move(pos, pos >> 7, whitePawn, whiteKnight),
-                    Move(pos, pos >> 7, whitePawn, whiteBishop),
-                    Move(pos, pos >> 7, whitePawn, whiteRook),
-                    Move(pos, pos >> 7, whitePawn, whiteQueen),
-
-                    Move(pos, pos >> 9, whitePawn, whiteKnight),
-                    Move(pos, pos >> 9, whitePawn, whiteBishop),
-                    Move(pos, pos >> 9, whitePawn, whiteRook),
-                    Move(pos, pos >> 9, whitePawn, whiteQueen),
-            };
-        } else if (rowNumber(pos) == 7 && colNumber(pos) == A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos >> 8, whitePawn, whiteKnight),
-                    Move(pos, pos >> 8, whitePawn, whiteBishop),
-                    Move(pos, pos >> 8, whitePawn, whiteRook),
-                    Move(pos, pos >> 8, whitePawn, whiteQueen),
-
-                    Move(pos, pos >> 7, whitePawn, whiteKnight),
-                    Move(pos, pos >> 7, whitePawn, whiteBishop),
-                    Move(pos, pos >> 7, whitePawn, whiteRook),
-                    Move(pos, pos >> 7, whitePawn, whiteQueen),
-            };
-        } else if (rowNumber(pos) == 7 && colNumber(pos) == H) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos >> 8, whitePawn, whiteKnight),
-                    Move(pos, pos >> 8, whitePawn, whiteBishop),
-                    Move(pos, pos >> 8, whitePawn, whiteRook),
-                    Move(pos, pos >> 8, whitePawn, whiteQueen),
-
-                    Move(pos, pos >> 9, whitePawn, whiteKnight),
-                    Move(pos, pos >> 9, whitePawn, whiteBishop),
-                    Move(pos, pos >> 9, whitePawn, whiteRook),
-                    Move(pos, pos >> 9, whitePawn, whiteQueen),
-            };
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) < H && colNumber(pos) > A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos >> 8, whitePawn),
-                    Move(pos, pos >> 7, whitePawn),
-                    Move(pos, pos >> 9, whitePawn)
-            };
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) == H) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos >> 8, whitePawn),
-                    Move(pos, pos >> 9, whitePawn)
-            };
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) == A) {
-            tmp = std::vector<Move>{
-                    Move(pos, pos >> 8, whitePawn),
-                    Move(pos, pos >> 7, whitePawn)
-            };
-        } else {
-            std::cout << "invalid white pawn position: " << bitToSquare(pos) << " " << colNumber(pos) << '\n';
-        }
-        return tmp;
-    } else if (isKnight(p)) {
-        std::vector<Move> tmp;
-        tmp.reserve(8);
-        if (colNumber(pos) > A && rowNumber(pos) > 2)
-            tmp.push_back(Move(pos, pos << 15, p));
-
-        if (colNumber(pos) > A && rowNumber(pos) < 7)
-            tmp.push_back(Move(pos, pos >> 17, p));
-
-        if (colNumber(pos) > B && rowNumber(pos) > 1)
-            tmp.push_back(Move(pos, pos << 6, p));
-
-        if (colNumber(pos) > B && rowNumber(pos) < 8)
-            tmp.push_back(Move(pos, pos >> 10, p));
-
-        if (colNumber(pos) < H && rowNumber(pos) > 2)
-            tmp.push_back(Move(pos, pos << 17, p));
-
-        if (colNumber(pos) < H && rowNumber(pos) < 7)
-            tmp.push_back(Move(pos, pos >> 15, p));
-
-        if (colNumber(pos) < G && rowNumber(pos) > 1)
-            tmp.push_back(Move(pos, pos << 10, p));
-
-        if (colNumber(pos) < G && rowNumber(pos) < 8)
-            tmp.push_back(Move(pos, pos >> 6, p));
-
-        tmp.shrink_to_fit();
-        return tmp;
-    } else if (isBishop(p)) {
-        std::vector<Move> tmp;
-        tmp.reserve(13);
-        char r = colNumber(pos);
-        int c = rowNumber(pos);
-        int i = 1;
-        while (r > A && c > 1) {
-            --r;
-            --c;
-            tmp.push_back(Move(pos, pos << i * 7, p));
-            ++i;
-        }
-
-        r = colNumber(pos);
-        c = rowNumber(pos);
-        i = 1;
-        while (r > A && c < 8) {
-            --r;
-            ++c;
-            tmp.push_back(Move(pos, pos >> i * 9, p));
-            ++i;
-        }
-
-        r = colNumber(pos);
-        c = rowNumber(pos);
-        i = 1;
-        while (r < H && c > 1) {
-            ++r;
-            --c;
-            tmp.push_back(Move(pos, pos << i * 9, p));
-            ++i;
-        }
-
-        r = colNumber(pos);
-        c = rowNumber(pos);
-        i = 1;
-        while (r < H && c < 8) {
-            ++r;
-            ++c;
-            tmp.push_back(Move(pos, pos >> i * 7, p));
-            ++i;
-        }
-        tmp.shrink_to_fit();
-        return tmp;
-    } else if (isRook(p)) {
-        std::vector<Move> tmp;
-        tmp.reserve(14);
-        char r = colNumber(pos);
-        int c = rowNumber(pos);
-        int i = 1;
-        while (r > A) {
-            --r;
-            tmp.push_back(Move(pos, pos >> i, p));
-            ++i;
-        }
-
-        r = colNumber(pos);
-        c = rowNumber(pos);
-        i = 1;
-        while (r < H) {
-            ++r;
-            tmp.push_back(Move(pos, pos << i, p));
-            ++i;
-        }
-
-        r = colNumber(pos);
-        c = rowNumber(pos);
-        i = 1;
-        while (c > 1) {
-            --c;
-            tmp.push_back(Move(pos, pos << i * 8, p));
-            ++i;
-        }
-
-        r = colNumber(pos);
-        c = rowNumber(pos);
-        i = 1;
-        while (c < 8) {
-            ++c;
-            tmp.push_back(Move(pos, pos >> i * 8, p));
-            ++i;
-        }
-
-        tmp.shrink_to_fit();
-        return tmp;
-    } else if (isQueen(p)) {
-        auto r = possibleMoves(blackRook, pos);
-        r.reserve(r.size() + 13);
-        const auto b = possibleMoves(blackBishop, pos);
-        for (const auto& i : b) {
-            r.push_back(i);
-        }
-        for (auto& i : r) {
-            i.piece = p;
-        }
-        r.shrink_to_fit();
-        return r;
-    } else if (isKing(p)) {
-        std::vector<Move> tmp;
-        tmp.reserve(8);
-
-        if (colNumber(pos) > A)
-            tmp.push_back(Move(pos, pos >> 1, p));
-        
-        if (colNumber(pos) < H)
-            tmp.push_back(Move(pos, pos << 1, p));
-        
-        if (rowNumber(pos) > 1)
-            tmp.push_back(Move(pos, pos << 8, p));
-        
-        if (rowNumber(pos) < 8)
-            tmp.push_back(Move(pos, pos >> 8, p));
-        
-        if (rowNumber(pos) > 1 && colNumber(pos) > A)
-            tmp.push_back(Move(pos, pos << 7, p));
-        
-        if (rowNumber(pos) > 1 && colNumber(pos) < H)
-            tmp.push_back(Move(pos, pos << 9, p));
-        
-        if (rowNumber(pos) < 8 && colNumber(pos) > A)
-            tmp.push_back(Move(pos, pos >> 9, p));
-        
-        if (rowNumber(pos) < 8 && colNumber(pos) < H)
-            tmp.push_back(Move(pos, pos >> 7, p));
-
-        if (isWhite(p)) {
-            if (castleRights & (1 << 3) && pos == E1) tmp.push_back(Move(E1, G1, whiteKing));
-            if (castleRights & (1 << 2) && pos == E1) tmp.push_back(Move(E1, C1, whiteKing));
-        } else if (isBlack(p)) {
-            if (castleRights & (1 << 1) && pos == E8) tmp.push_back(Move(E8, G8, blackKing));
-            if (castleRights & (1 << 0) && pos == E8) tmp.push_back(Move(E8, C8, blackKing));
-        }
-        tmp.shrink_to_fit();
-        return tmp;
-        
+        magic &= magic - 1;
     }
-    return std::vector<Move>();
+    tmp.shrink_to_fit();
+    return tmp;
 } // possibleMoves
 
 // pos is a square, e.g. "e4"
@@ -1092,16 +779,15 @@ void Position::resetOriginal() {
 }
 
 int Position::materialCount() const {
-    int white = 0;
-    int black = 0;
-
     int val[12] = {
         100 , 300 , 300 , 500 , 900 , 0,
         -100, -300, -300, -500, -900, 0
     };
     
     int value = 0;
-    for (int i = 0; i < 12; ++i) {
+    for (int i = 0; i < 11; ++i) {
+        if (i == 5)
+            continue;
         value += val[i] * __builtin_popcount(thePosition.at(i));
     }
     return value;
