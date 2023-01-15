@@ -336,22 +336,23 @@ Move Position::parseString(std::string s) {
 }
 
 bool Position::isValid(const Move& m) {
-    return isValidMove(m, m.piece, m.piece);
+    return isValidMove(m, m.piece);
 }
 
-bool Position::isValidMove(const Move& m, Piece piece, Piece orig) {
+bool Position::isValidMove(const Move& m, Piece piece) {
     Square source = getSquare(m.source);
     Square dest   = getSquare(m.dest);
-    Piece prom = m.promotionPiece;
 
     for (const auto& s : possibleMoves(piece, source)) {
         if (s == m) goto NEXT;
     }
     return false;
   NEXT:
+    // if the destination square has a piece with the same colour
     if (isBlack(piece) && (dest & blackPieces) != 0) return false;
     if (isWhite(piece) && (dest & whitePieces) != 0) return false;
 
+    // if a pawn is trying to move forward into a piece of their own colour
     if (piece == blackPawn) {
         if (colNumber(source) != colNumber(dest) && rowNumber(source) != rowNumber(dest)) {
             if (dest != enPassant && (dest & whitePieces) == 0) return false;
@@ -368,20 +369,14 @@ bool Position::isValidMove(const Move& m, Piece piece, Piece orig) {
     
     if (isKnight(piece)) {
         move(m);
-        if (isBlack(piece) && blackInCheck()) {
-            unmove();
-            return false;
-        }
-        if (isWhite(piece) && whiteInCheck()) {
+        if ((isBlack(piece) && blackInCheck()) ||
+            (isWhite(piece) && whiteInCheck())) {
             unmove();
             return false;
         }
         unmove();
         return true;
     }
-    // check if path is blocked for b, r, q
-    if (piece == blackRook || piece == blackBishop) return isValidMove(m, blackQueen, orig);
-    if (piece == whiteRook || piece == whiteBishop) return isValidMove(m, whiteQueen, orig);
 
     if (piece == whiteKing) {
         move(m);
@@ -391,9 +386,10 @@ bool Position::isValidMove(const Move& m, Piece piece, Piece orig) {
         }
         unmove();
 
+        // if there is something on B1 to prevent O-O-O
         if (dest == C1 && source == E1) {
-            if ((B1 & blackPieces) != 0 || 
-                (B1 & whitePieces) != 0) return false;
+            if (((B1 & blackPieces) | 
+                (B1 & whitePieces)) != 0) return false;
         }
 
         if ((dest == G1 && source == E1) || (dest == C1 && source == E1)) {
@@ -401,6 +397,7 @@ bool Position::isValidMove(const Move& m, Piece piece, Piece orig) {
             Square kpos, rpos, rook, king;
             king = E1;
             kpos = dest;
+            // if castle rights are not enabled
             if (kpos == G1) {
                 if ((castleRights & (1 << 3)) == 0) return false;
                 rook = H1;
@@ -413,9 +410,11 @@ bool Position::isValidMove(const Move& m, Piece piece, Piece orig) {
                 return false;
             }
 
+            // if the king or rook are not on the correct squares
             if (!((thePosition.at(whiteKing)) & king) ||
                 !((thePosition.at(whiteRook)) & rook)) return false;
 
+            // if there is something blocking the eventual king and rook positions
             if ((kpos & blackPieces) != 0 || 
                 (rpos & blackPieces) != 0) return false;
             if ((kpos & whitePieces) != 0 || 
@@ -477,15 +476,21 @@ bool Position::isValidMove(const Move& m, Piece piece, Piece orig) {
         }
         return true;
     }
-
-    if (isMoveBlocked(Move(source, dest, orig, prom))) return false;
-
-    move(Move(source, dest, orig, prom));
-    if (isBlack(piece) && blackInCheck()) {
-        unmove();
-        return false;
+    
+    // check if pawn move is blocked
+    if (piece == whitePawn && rowNumber(source) == 2 && rowNumber(dest) == 4) {
+        if (((source >> 8) & whitePieces) || 
+            ((source >> 8) & blackPieces))
+            return false;
+    } else if (piece == blackPawn && rowNumber(source) == 7 && rowNumber(dest) == 5) {
+        if (((source << 8) & whitePieces) || 
+            ((source << 8) & blackPieces))
+            return false;
     }
-    if (isWhite(piece) && whiteInCheck()) {
+
+    move(m);
+    if ((isBlack(piece) && blackInCheck()) ||
+        (isWhite(piece) && whiteInCheck())) {
         unmove();
         return false;
     }
@@ -493,71 +498,6 @@ bool Position::isValidMove(const Move& m, Piece piece, Piece orig) {
 
     return true;
 } // isValidMove
-
-// source and dest are 2-length strings
-bool Position::isMoveBlocked(const Move& m) const {
-    Square source = getSquare(m.source);
-    Square dest   = getSquare(m.dest);
-    Square cur    = source;
-    if (colNumber(source) == colNumber(dest) && rowNumber(source) <= rowNumber(dest)) {
-        cur >>= 8;
-        while (cur != dest) {
-            if ((cur & blackPieces) != 0 || 
-                (cur & whitePieces) != 0) return true;
-            cur >>= 8;
-        }
-    } else if (colNumber(source) == colNumber(dest) && rowNumber(source) >= rowNumber(dest)) {
-        cur <<= 8;
-        while (cur != dest) {
-            if ((cur & blackPieces) != 0 || 
-                (cur & whitePieces) != 0) return true;
-            cur <<= 8;
-        }
-    } else if (colNumber(source) >= colNumber(dest) && rowNumber(source) == rowNumber(dest)) {
-        cur >>= 1;
-        while (cur != dest) {
-            if ((cur & blackPieces) != 0 || 
-                (cur & whitePieces) != 0) return true;
-            cur >>= 1;
-        }
-    } else if (colNumber(source) <= colNumber(dest) && rowNumber(source) == rowNumber(dest)) {
-        cur <<= 1;
-        while (cur != dest) {
-            if ((cur & blackPieces) != 0 || 
-                (cur & whitePieces) != 0) return true;
-            cur <<= 1;
-        }
-    } else if (colNumber(source) <= colNumber(dest) && rowNumber(source) <= rowNumber(dest)) {
-        cur >>= 7;
-        while (cur != dest) {
-            if ((cur & blackPieces) != 0 || 
-                (cur & whitePieces) != 0) return true;
-            cur >>= 7;
-        }
-    } else if (colNumber(source) >= colNumber(dest) && rowNumber(source) >= rowNumber(dest)) {
-        cur <<= 7;
-        while (cur != dest) {
-            if ((cur & blackPieces) != 0 || 
-                (cur & whitePieces) != 0) return true;
-            cur <<= 7;
-        }
-    } else if (colNumber(source) <= colNumber(dest) && rowNumber(source) >= rowNumber(dest)) {
-        cur <<= 9;
-        while (cur != dest) {
-            if ((cur & blackPieces) != 0 || 
-                (cur & whitePieces) != 0) return true;
-            cur <<= 9;
-        }
-    } else if (colNumber(source) >= colNumber(dest) && rowNumber(source) <= rowNumber(dest)) {
-        cur >>= 9;
-        while (cur != dest) {
-            if ((cur & blackPieces) != 0 || 
-                (cur & whitePieces) != 0) return true;
-            cur >>= 9;
-        }
-    }
-    return false;
-}
 
 // pos is a square, e.g. "e4"
 std::vector<Move> Position::validMoves(Piece p, Square pos) {
@@ -599,30 +539,6 @@ std::vector<Move> Position::possibleMoves(Piece p, Square pos) const {
     return tmp;
 } // possibleMoves
 
-// pos is a square, e.g. "e4"
-std::vector<Square> Position::checkingSquares(Piece p, Square pos) const {
-    std::vector<Move> tmp = possibleMoves(p, pos);
-    if (isKnight(p)) {
-        std::vector<Square> r;
-        r.reserve(8);
-        for (const auto& i : tmp) {
-            r.push_back(getSquare(i.dest));
-        }
-        return r;
-    }
-
-    std::vector<Square> cpy;
-    cpy.reserve(tmp.size());
-    for (const auto& i : tmp) {
-        if (!isMoveBlocked(i) && 
-            !(isPawn(p) && colNumber(getSquare(i.source)) == colNumber(getSquare(i.dest)))) {
-            cpy.push_back(getSquare(i.dest));
-        }
-    }
-    cpy.shrink_to_fit();
-    return cpy;
-}
-
 std::vector<Move> Position::legalMoves() {
     std::vector<Move> tmp;
     tmp.reserve(100);
@@ -639,7 +555,7 @@ std::vector<Move> Position::legalMoves() {
     return tmp;
 }
 
-void Position::move(Move m) {
+void Position::move(const Move& m) {
     Square s = getSquare(m.source);
     Square d = getSquare(m.dest);
     // set the source bit to 0
@@ -679,7 +595,7 @@ void Position::move(Move m) {
     // if en passent
     if (m.piece == whitePawn && d == enPassant) {
         thePosition.at(blackPawn) &= ~(d << 8);
-    } else if (m.piece == blackPawn && m.dest == enPassant) {
+    } else if (m.piece == blackPawn && d == enPassant) {
         thePosition.at(whitePawn) &= ~(d >> 8);
     }
 
@@ -717,34 +633,83 @@ void Position::unmove() {
     fullMove     = OfullMove;
 }
 
-void Position::advance(Move m) {
+void Position::advance(const Move& m) {
     move(m);
     resetOriginal();
 }
 
 bool Position::whiteInCheck() {
-    for (int i = 6; i <= 10; ++i) {
-        for (const auto& j : bbToSquares(thePosition.at(i))) {
-            for (const auto& k : checkingSquares((i), j)) {
-                if (thePosition.at(whiteKing) & k) {
-                    return true;
-                }
-            }
+
+    U64 cpy = thePosition.at(blackPawn);
+    while (cpy != 0) {
+        Square pawn = getSquare(__builtin_ctzll(cpy));
+        if (colNumber(pawn) == A) {
+            if (thePosition.at(whiteKing) & (pawn << 9))
+                return true;
+        } else if (colNumber(pawn) == H) {
+            if (thePosition.at(whiteKing) & (pawn << 7))
+                return true;
+        } else {
+            if (thePosition.at(whiteKing) & (pawn << 7) || 
+                thePosition.at(whiteKing) & (pawn << 9))
+                return true;
         }
+
+        cpy &= cpy - 1;
     }
+
+    // for bishop, knight, rook, queen, place that piece on the king square and check if they can attack
+    // its respective piece. e.g. if the white king is on E1, place a black bishop on E1 and check if 
+    // that black bishop can attack any actual black bishops
+    for (int i = 7; i <= 10; ++i) {
+        if (magic::getAttacks(i, thePosition.at(whiteKing), whitePieces | blackPieces) & thePosition.at(i))
+            return true;
+    }
+
+    if (magic::getAttacks(blackKing, thePosition.at(whiteKing), whitePieces | blackPieces) & 
+        thePosition.at(blackKing) & ~G8 & ~C8)
+        return true;
+
     return false;
 }
 
 bool Position::blackInCheck() {
-    for (int i = 0; i <= 4; ++i) {
-        for (const auto& j : bbToSquares(thePosition.at(i))) {
-            for (const auto& k : checkingSquares((i), j)) {
-                if (thePosition.at(blackKing) & k) {
-                    return true;
-                }
-            }
-        }
+
+    if (thePosition.at(blackKing) == 0) {
+        std::cout << "black king not in position" << '\n';
+        //return 1;
     }
+
+    U64 cpy = thePosition.at(whitePawn);
+    while (cpy != 0) {
+        Square pawn = getSquare(__builtin_ctzll(cpy));
+        if (colNumber(pawn) == A) {
+            if (thePosition.at(blackKing) & (pawn >> 7))
+                return true;
+        } else if (colNumber(pawn) == H) {
+            if (thePosition.at(blackKing) & (pawn >> 9))
+                return true;
+        } else {
+            if (thePosition.at(blackKing) & (pawn >> 9) || 
+                thePosition.at(blackKing) & (pawn >> 7))
+                return true;
+        }
+
+        cpy &= cpy - 1;
+    }
+
+    // for bishop, knight, rook, queen, place that piece on the king square and check if they can attack
+    // its respective piece. e.g. if the white king is on E1, place a black bishop on E1 and check if 
+    // that black bishop can attack any actual black bishops
+    for (int i = 1; i <= 4; ++i) {
+        if (magic::getAttacks(i, thePosition.at(blackKing), whitePieces | blackPieces) & thePosition.at(i))
+            return true;
+    }
+
+    if (magic::getAttacks(whiteKing, thePosition.at(blackKing), whitePieces | blackPieces) 
+        & thePosition.at(whiteKing) & ~G1 & ~C1)
+        return true;
+
     return false;
 }
 

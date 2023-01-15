@@ -104,9 +104,7 @@ class Position {
     bool isValid(const Move& m);
     // private helper method
   //private:
-    bool isValidMove(const Move& m, Piece piece, Piece orig);
-    // private method to check if a move is blocked
-    bool isMoveBlocked(const Move& m) const;
+    bool isValidMove(const Move& m, Piece piece);
     // returns a list of possible moves for a piece p at square pos
     // i.e. the possible premoves you can make
     // private method
@@ -114,10 +112,6 @@ class Position {
     // returns a list of valid moves wrt the current position
   public:
     std::vector<Move> validMoves(Piece p, Square pos);
-    // returns a list of squares that are attacked by a piece p at square pos
-    // private method
-  //private:
-    std::vector<Square> checkingSquares(Piece p, Square pos) const;
     // returns a list of all legal moves at the current position
   public:
     std::vector<Move> legalMoves();
@@ -130,12 +124,12 @@ class Position {
     void resetOriginal();
 
     // move the position
-    void move(Move m);
+    void move(const Move& m);
     // reset the position
     void unmove();
 
     // moves the position and updates the original
-    void advance(Move m);
+    void advance(const Move& m);
 
     // returns if white/black is in check/checkmate
     bool whiteInCheck();

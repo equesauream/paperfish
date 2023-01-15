@@ -34,7 +34,7 @@ Move::Move(Square s, Square d, Piece p, Piece prom) {
         enPassantSquare = getSquareIndex(s << 8);
     else if (p == whitePawn && rowNumber(s) == 2 && rowNumber(d) == 4)
         enPassantSquare = getSquareIndex(s >> 8);
-    else 
+    else
         enPassantSquare = 0;
 }
 

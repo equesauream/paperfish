@@ -23,14 +23,21 @@ int main () {
 
   //Board b;
   //Board b("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+  //Board b("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
   Board b("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
-  //b.move(b.current.parseString("d5d6"));
-  //std::cout << b.current.toFEN() << '\n';
+  // /b.move(Move(E2, E4, whitePawn));
+  // /b.move(Move(C7, C5, blackPawn));
+  // /b.move(Move(B5, C6, whitePawn));
+
+  /*for (const auto& i : b.current.legalMoves()) {
+    std::cout << i << '\n';
+  }*/
+
   std::cout << b.current << '\n';
   
   int k = 4;
-  clock_t start_time = clock();
   //b.perftDivide(k);
+  clock_t start_time = clock();
   const auto perft_result = b.perft(k);
   std::cout << perft_result << '\n';
   start_time = clock() - start_time;
