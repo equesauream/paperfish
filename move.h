@@ -11,10 +11,17 @@ class Position;
 typedef unsigned long long U64;
 using Square = unsigned long long;
 using Piece = int;
+using MoveType = uint8_t;
 
 namespace engine {
 
+enum {
+    Basic,
+    Capture,
+};
+
 struct Move {
+    MoveType type;
     SquareIndex source;
     SquareIndex dest;
     Piece piece;
@@ -28,7 +35,7 @@ struct Move {
     
   public:
     Move();
-    Move(Square s, Square d, Piece piece, Piece prom = NoPiece);
+    Move(Square s, Square d, Piece piece, MoveType mt, Piece prom = NoPiece);
 };
 
 bool operator==(const Move& lhs, const Move& rhs);

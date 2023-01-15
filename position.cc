@@ -332,7 +332,16 @@ Move Position::parseString(std::string s) {
         proPiece = pieceMap.at(toupper(s.at(4)));
     else if (s.length() > 4 && turn == 1)
         proPiece = pieceMap.at(tolower(s.at(4)));
-    return Move(r, d, p, proPiece);
+    
+    MoveType mt = Basic;
+    for (int i = 0; i < 12; ++i) {
+        if (i == p)
+            continue;
+        
+        if (thePosition.at(i) & d)
+            mt = Capture;
+    }
+    return Move(r, d, p, mt, proPiece);
 }
 
 bool Position::isValid(const Move& m) {
@@ -420,7 +429,7 @@ bool Position::isValidMove(const Move& m, Piece piece) {
             if ((kpos & whitePieces) != 0 || 
                 (rpos & whitePieces) != 0) return false;
 
-            move(Move(E1, rpos, whiteKing));
+            move(Move(E1, rpos, whiteKing, Basic));
             if (whiteInCheck()) {
                 unmove();
                 return false;
@@ -467,7 +476,7 @@ bool Position::isValidMove(const Move& m, Piece piece) {
             if ((kpos & whitePieces) != 0 || 
                 (rpos & whitePieces) != 0) return false;
 
-            move(Move(E8, rpos, blackKing));
+            move(Move(E8, rpos, blackKing, Basic));
             if (blackInCheck()) {
                 unmove();
                 return false;
@@ -519,19 +528,29 @@ std::vector<Move> Position::possibleMoves(Piece p, Square pos) const {
     std::vector<Move> tmp;
     tmp.reserve(24);
     while (magic != 0) {
-        Square s = getSquare(__builtin_ctzll(magic));
+        Square s = 1ULL << __builtin_ctzll(magic);
+
+        MoveType mt = Basic;
+        for (int i = 0; i < 12; ++i) {
+            if (i == p)
+                continue;
+
+            if (thePosition.at(i) & s)
+                mt = Capture;
+        }
+
         if (p == blackPawn && rowNumber(s) == 1) {
-            tmp.push_back(Move(pos, s, p, blackKnight));
-            tmp.push_back(Move(pos, s, p, blackBishop));
-            tmp.push_back(Move(pos, s, p, blackRook));
-            tmp.push_back(Move(pos, s, p, blackQueen));
+            tmp.push_back(Move(pos, s, p, mt, blackKnight));
+            tmp.push_back(Move(pos, s, p, mt, blackBishop));
+            tmp.push_back(Move(pos, s, p, mt, blackRook));
+            tmp.push_back(Move(pos, s, p, mt, blackQueen));
         } else if (p == whitePawn && rowNumber(s) == 8) {
-            tmp.push_back(Move(pos, s, p, whiteKnight));
-            tmp.push_back(Move(pos, s, p, whiteBishop));
-            tmp.push_back(Move(pos, s, p, whiteRook));
-            tmp.push_back(Move(pos, s, p, whiteQueen));
+            tmp.push_back(Move(pos, s, p, mt, whiteKnight));
+            tmp.push_back(Move(pos, s, p, mt, whiteBishop));
+            tmp.push_back(Move(pos, s, p, mt, whiteRook));
+            tmp.push_back(Move(pos, s, p, mt, whiteQueen));
         } else {
-            tmp.push_back(Move(pos, s, p));
+            tmp.push_back(Move(pos, s, p, mt));
         }
         magic &= magic - 1;
     }
@@ -562,8 +581,10 @@ void Position::move(const Move& m) {
     thePosition.at(m.piece) &= ~s;
     
     // set all destination bits to 0
-    for (auto& board : thePosition) {
-        board &= ~d;
+    if (m.type == Capture) {
+        for (auto& board : thePosition) {
+            board &= ~d;
+        }
     }
 
     // set the destination bit of the moving piece to 1
@@ -677,7 +698,6 @@ bool Position::blackInCheck() {
 
     if (thePosition.at(blackKing) == 0) {
         std::cout << "black king not in position" << '\n';
-        //return 1;
     }
 
     U64 cpy = thePosition.at(whitePawn);
@@ -714,11 +734,11 @@ bool Position::blackInCheck() {
 }
 
 bool Position::whiteInCheckmate() {
-    return (turn == 0 && whiteInCheck() && legalMoves().size() == 0);
+    return (turn == White && whiteInCheck() && legalMoves().size() == 0);
 }
 
 bool Position::blackInCheckmate() {
-    return (turn == 1 && blackInCheck() && legalMoves().size() == 0);
+    return (turn == Black && blackInCheck() && legalMoves().size() == 0);
 }
 
 void Position::updateBoards() {

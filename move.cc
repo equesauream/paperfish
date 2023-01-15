@@ -13,7 +13,8 @@ Move::Move() {
     enPassantSquare = 0;
 }
 
-Move::Move(Square s, Square d, Piece p, Piece prom) {
+Move::Move(Square s, Square d, Piece p, MoveType mt, Piece prom) {
+    type = mt;
     piece  = p;
     source = getSquareIndex(s);
     dest   = getSquareIndex(d);
