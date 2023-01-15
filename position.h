@@ -13,6 +13,7 @@ using U64 = unsigned long long;
 using Square = unsigned long long;
 using Key = unsigned long long;
 using Piece = int;
+using MoveType = uint8_t;
 /*
 
 top left = first bit
@@ -96,6 +97,8 @@ class Position {
     
     // given a string, return a Move
     Move parseString(std::string s);
+
+    MoveType getMoveType(Square source, Square dest, Piece p) const;
 
 
   public:

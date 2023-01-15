@@ -319,7 +319,7 @@ std::ostream& operator<<(std::ostream& out, const Position& pos) {
 Move Position::parseString(std::string s) {
     Square r = squareToBit(s.substr(0, 2));
     Square d = squareToBit(s.substr(2, 2));
-    Piece p;
+    Piece p = NoPiece;
     Piece proPiece = NoPiece;
 
     for (int i = 0; i < 12; ++i) {
@@ -332,16 +332,35 @@ Move Position::parseString(std::string s) {
         proPiece = pieceMap.at(toupper(s.at(4)));
     else if (s.length() > 4 && turn == 1)
         proPiece = pieceMap.at(tolower(s.at(4)));
-    
+
+    return Move(r, d, p, getMoveType(r, d, p), proPiece);
+}
+
+MoveType Position::getMoveType(Square source, Square dest, Piece p) const {
     MoveType mt = Basic;
     for (int i = 0; i < 12; ++i) {
         if (i == p)
             continue;
         
-        if (thePosition.at(i) & d)
+        if (thePosition.at(i) & dest)
             mt = Capture;
     }
-    return Move(r, d, p, mt, proPiece);
+
+    int diff = rowNumber(source) - rowNumber(dest);
+    if (isPawn(p) && (diff == 2 || diff == -2))
+        mt = LongPawn;
+
+    if (dest == enPassant)
+        mt = enPassant;
+
+    if ((p == whiteKing && source == E1 && dest == G1) ||
+        (p == blackKing && source == E8 && dest == G8))
+        mt = ShortCastle;
+    else if ((p == whiteKing && source == E1 && dest == C1) ||
+             (p == blackKing && source == E8 && dest == C8))
+        mt = LongCastle;
+
+    return mt;
 }
 
 bool Position::isValid(const Move& m) {
@@ -396,12 +415,12 @@ bool Position::isValidMove(const Move& m, Piece piece) {
         unmove();
 
         // if there is something on B1 to prevent O-O-O
-        if (dest == C1 && source == E1) {
+        if (m.type == LongCastle) {
             if (((B1 & blackPieces) | 
                 (B1 & whitePieces)) != 0) return false;
         }
 
-        if ((dest == G1 && source == E1) || (dest == C1 && source == E1)) {
+        if (m.type == ShortCastle || m.type == LongCastle) {
             if (whiteInCheck()) return false;
             Square kpos, rpos, rook, king;
             king = E1;
@@ -446,12 +465,12 @@ bool Position::isValidMove(const Move& m, Piece piece) {
         }
         unmove();
 
-        if (dest == C8 && source == E8) {
+        if (m.type == LongCastle) {
             if ((B8 & blackPieces) != 0 || 
                 (B8 & whitePieces) != 0) return false;
         }
 
-        if ((dest == G8 && source == E8) || (dest == C8 && source == E8)) {
+        if (m.type == ShortCastle || m.type == LongCastle) {
             if (blackInCheck()) return false;
             Square kpos, rpos, rook, king;
             king = E8;
@@ -487,11 +506,11 @@ bool Position::isValidMove(const Move& m, Piece piece) {
     }
     
     // check if pawn move is blocked
-    if (piece == whitePawn && rowNumber(source) == 2 && rowNumber(dest) == 4) {
+    if (piece == whitePawn && m.type == LongPawn) {
         if (((source >> 8) & whitePieces) || 
             ((source >> 8) & blackPieces))
             return false;
-    } else if (piece == blackPawn && rowNumber(source) == 7 && rowNumber(dest) == 5) {
+    } else if (piece == blackPawn && m.type == LongPawn) {
         if (((source << 8) & whitePieces) || 
             ((source << 8) & blackPieces))
             return false;
@@ -530,14 +549,7 @@ std::vector<Move> Position::possibleMoves(Piece p, Square pos) const {
     while (magic != 0) {
         Square s = 1ULL << __builtin_ctzll(magic);
 
-        MoveType mt = Basic;
-        for (int i = 0; i < 12; ++i) {
-            if (i == p)
-                continue;
-
-            if (thePosition.at(i) & s)
-                mt = Capture;
-        }
+        MoveType mt = getMoveType(pos, s, p);
 
         if (p == blackPawn && rowNumber(s) == 1) {
             tmp.push_back(Move(pos, s, p, mt, blackKnight));
@@ -599,16 +611,16 @@ void Position::move(const Move& m) {
     }
 
     // if castle
-    if (m.piece == whiteKing && s == E1 && d == G1) {
+    if (m.piece == whiteKing && m.type == ShortCastle) {
         thePosition.at(whiteRook) &= ~H1;
         thePosition.at(whiteRook) |= F1;
-    } else if (m.piece == whiteKing && s == E1 && d == C1) {
+    } else if (m.piece == whiteKing && m.type == LongCastle) {
         thePosition.at(whiteRook) &= ~A1;
         thePosition.at(whiteRook) |= D1;
-    } else if (m.piece == blackKing && s == E8 && d == G8) {
+    } else if (m.piece == blackKing && m.type == ShortCastle) {
         thePosition.at(blackRook) &= ~H8;
         thePosition.at(blackRook) |= F8;
-    } else if (m.piece == blackKing && s == E8 && d == C8) {
+    } else if (m.piece == blackKing && m.type == LongCastle) {
         thePosition.at(blackRook) &= ~A8;
         thePosition.at(blackRook) |= D8;
     }
@@ -628,11 +640,9 @@ void Position::move(const Move& m) {
         }
     }
 
-    int before = countBits(whitePieces) + countBits(blackPieces);
     updateBoards();
-    int after = countBits(whitePieces) + countBits(blackPieces);
     // if capture or pawn move
-    if (before != after || isPawn(m.piece)) {
+    if (m.type == Capture || isPawn(m.piece)) {
         halfMove = 0;
     } else {
         ++halfMove;

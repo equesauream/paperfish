@@ -18,6 +18,10 @@ namespace engine {
 enum {
     Basic,
     Capture,
+    LongPawn,
+    EnPassant,
+    ShortCastle,
+    LongCastle
 };
 
 struct Move {
