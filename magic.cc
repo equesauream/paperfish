@@ -230,6 +230,7 @@ U64 getRookAttacks(Square s, U64 blockers) {
 }
 
 U64 getBishopAttacks(Square s, U64 blockers) {
+    blockers &= ~s;
     Square cur = s;
     int index = getSquareIndex(s);
     U64 tmp = 0;

@@ -45,8 +45,9 @@ U64 squareToBit(const std::string& s) {
 std::vector<Square> bbToSquares(U64 board) {
     std::vector<Square> bitSquares;
     while (board != 0) {
-        bitSquares.push_back(1ULL << getSquareIndex(board));
-        board &= board - 1;
+        Square s = board & (~board + 1);
+        bitSquares.push_back(s);
+        board ^= s;
     }
     return bitSquares;
 }

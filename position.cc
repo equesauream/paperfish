@@ -532,7 +532,7 @@ std::vector<Move> Position::validMoves(Piece p, Square pos) {
             tmp.push_back(i);
         }
     }
-    tmp.shrink_to_fit();
+    //tmp.shrink_to_fit();
     return tmp;
 }
 
@@ -542,7 +542,7 @@ std::vector<Move> Position::possibleMoves(Piece p, Square pos) const {
     std::vector<Move> tmp;
     tmp.reserve(24);
     while (magic != 0) {
-        Square s = 1ULL << __builtin_ctzll(magic);
+        Square s = magic & (~magic + 1);
 
         MoveType mt = getMoveType(pos, s, p);
 
@@ -559,9 +559,9 @@ std::vector<Move> Position::possibleMoves(Piece p, Square pos) const {
         } else {
             tmp.push_back(Move(pos, s, p, mt));
         }
-        magic &= magic - 1;
+        magic ^= s;
     }
-    tmp.shrink_to_fit();
+    //tmp.shrink_to_fit();
     return tmp;
 } // possibleMoves
 
@@ -583,10 +583,10 @@ std::vector<Move> Position::legalMoves() {
             for (const auto& j : validMoves(i, s)) {
                 tmp.push_back(j);
             }
-            cpy &= cpy - 1;
+            cpy ^= s;
         }
     }
-    tmp.shrink_to_fit();
+    //tmp.shrink_to_fit();
     return tmp;
 }
 
@@ -594,7 +594,7 @@ void Position::move(const Move& m) {
     Square s = getSquare(m.source);
     Square d = getSquare(m.dest);
     // set the source bit to 0
-    thePosition.at(m.piece) &= ~s;
+    thePosition.at(m.piece) ^= s;
     
     // set all destination bits to 0
     if (m.type == Capture) {
@@ -609,38 +609,38 @@ void Position::move(const Move& m) {
     // if promotion
     if (m.promotionPiece != NoPiece) {
         // set the destination square of the pawn to 0
-        thePosition.at(m.piece) &= ~d;
+        thePosition.at(m.piece) ^= d;
 
         thePosition.at(m.promotionPiece) |= d;
     }
 
     // if castle
     if (m.piece == whiteKing && m.type == ShortCastle) {
-        thePosition.at(whiteRook) &= ~H1;
+        thePosition.at(whiteRook) ^= H1;
         thePosition.at(whiteRook) |= F1;
     } else if (m.piece == whiteKing && m.type == LongCastle) {
-        thePosition.at(whiteRook) &= ~A1;
+        thePosition.at(whiteRook) ^= A1;
         thePosition.at(whiteRook) |= D1;
     } else if (m.piece == blackKing && m.type == ShortCastle) {
-        thePosition.at(blackRook) &= ~H8;
+        thePosition.at(blackRook) ^= H8;
         thePosition.at(blackRook) |= F8;
     } else if (m.piece == blackKing && m.type == LongCastle) {
-        thePosition.at(blackRook) &= ~A8;
+        thePosition.at(blackRook) ^= A8;
         thePosition.at(blackRook) |= D8;
     }
 
     // if en passent
     if (m.piece == whitePawn && d == enPassant) {
-        thePosition.at(blackPawn) &= ~(d << 8);
+        thePosition.at(blackPawn) ^= (d << 8);
     } else if (m.piece == blackPawn && d == enPassant) {
-        thePosition.at(whitePawn) &= ~(d >> 8);
+        thePosition.at(whitePawn) ^= (d >> 8);
     }
 
     turn = !turn;
     enPassant = getSquare(m.enPassantSquare);
     for (int i = 0; i < 4; ++i) {
         if ((m.castleRights & (uint8_t) (1 << i)) == 0) {
-            castleRights &= (uint8_t) ~(1 << i);
+            castleRights ^= (uint8_t) (1 << i);
         }
     }
 

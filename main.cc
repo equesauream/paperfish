@@ -5,8 +5,6 @@
 #include "square.h"
 #include "magic.h"
 
-#include <cmath>
-#include <bitset>
 #include <time.h>
 
 using namespace engine;
@@ -29,7 +27,7 @@ int main () {
   // /b.move(Move(C7, C5, blackPawn));
   // /b.move(Move(B5, C6, whitePawn));
   
-  int k = 5;
+  int k = 6;
   //b.perftDivide(k);
   clock_t start_time = clock();
   const auto perft_result = b.perft(k);
