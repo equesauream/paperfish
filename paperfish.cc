@@ -88,8 +88,11 @@ int main() {
             std::string next = spaceSplit(line);
             if (next == "searchmoves") {
                 flag = next;
-                // take in searchmoves
-                continue;
+                /*std::string move = spaceSplit(line);
+                while (move != "") {
+                    game.searchmove(game.current.parseString(move), 4);
+                    move = spaceSplit(line);
+                }*/
             } else if (next == "ponder") {
 
             } else if (next == "wtime") {
@@ -114,17 +117,23 @@ int main() {
                 // search until the "stop" command
 
                 continue;
-            }
+            } /*else if (next == "perft") {
+                int n = spaceSplit(line).at(0) - '0';
+                std::cout << n << '\n';
+                std::cout << game.perft(n) << std::endl;
+                continue;
+            }*/
 
-            game.searchMoves(3);
-            std::cout << "bestmove " << transTable.at(game.current).bestMove << '\n';
+            //game.searchMoves(4);
+            std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
         } else if (first == "stop") {
             // stop calculating
             if (flag == "searchmoves") {
-                std::cout << "bestmove " << transTable.at(game.current).bestMove << '\n';
+                //game.searchMoves(4);
+                std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
                 flag = "";
             } else if (flag == "infinite") {
-                std::cout << "bestmove " << transTable.at(game.current).bestMove << '\n';
+                std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
                 flag = "";
             }
         } else if (first == "ponderhit") {

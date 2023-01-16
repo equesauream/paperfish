@@ -371,11 +371,6 @@ bool Position::isValidMove(const Move& m, Piece piece) {
     Square source = getSquare(m.source);
     Square dest   = getSquare(m.dest);
 
-    for (const auto& s : possibleMoves(piece, source)) {
-        if (s == m) goto NEXT;
-    }
-    return false;
-  NEXT:
     // if the destination square has a piece with the same colour
     if (isBlack(piece) && (dest & blackPieces) != 0) return false;
     if (isWhite(piece) && (dest & whitePieces) != 0) return false;
@@ -573,13 +568,22 @@ std::vector<Move> Position::possibleMoves(Piece p, Square pos) const {
 std::vector<Move> Position::legalMoves() {
     std::vector<Move> tmp;
     tmp.reserve(100);
-    for (int i = 0; i < 12; ++i) {
-        if ((i <= 5 && turn == true) ||
-            (i >= 6 && turn == false)) continue;
-        for (const auto& square : bbToSquares(thePosition.at(i))) {
-            for (const auto& j : validMoves((i), square)) {
+    int start, end;
+    if (turn == Black) {
+        start = 6;
+        end = 11;
+    } else {
+        start = 0;
+        end = 5;
+    }
+    for (int i = start; i <= end; ++i) {
+        U64 cpy = thePosition.at(i);
+        while (cpy != 0) {
+            Square s = cpy & (~cpy + 1);
+            for (const auto& j : validMoves(i, s)) {
                 tmp.push_back(j);
             }
+            cpy &= cpy - 1;
         }
     }
     tmp.shrink_to_fit();
@@ -673,7 +677,7 @@ bool Position::whiteInCheck() {
 
     U64 cpy = thePosition.at(blackPawn);
     while (cpy != 0) {
-        Square pawn = getSquare(__builtin_ctzll(cpy));
+        Square pawn = cpy & (~cpy + 1);
         if (colNumber(pawn) == A) {
             if (thePosition.at(whiteKing) & (pawn << 9))
                 return true;
@@ -712,7 +716,7 @@ bool Position::blackInCheck() {
 
     U64 cpy = thePosition.at(whitePawn);
     while (cpy != 0) {
-        Square pawn = getSquare(__builtin_ctzll(cpy));
+        Square pawn = cpy & (~cpy + 1);
         if (colNumber(pawn) == A) {
             if (thePosition.at(blackKing) & (pawn >> 7))
                 return true;

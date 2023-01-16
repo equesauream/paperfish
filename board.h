@@ -26,6 +26,8 @@ class Board {
     // search n ply or until quiescence
     void searchMoves(int n);
 
+    void searchmove(const Move& m, int n);
+
     // quiescence search
     int quiesce(int alpha, int beta);
 

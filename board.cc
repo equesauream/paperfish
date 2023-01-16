@@ -27,6 +27,12 @@ void Board::unmove() {
     history.pop_back();
 }
 
+void Board::searchmove(const Move& m, int n) {
+    move(m);
+    searchMoves(n);
+    unmove();
+}
+
 // search n moves or until quiet
 void Board::searchMoves(int n) {
     Move best;
@@ -45,8 +51,8 @@ void Board::searchMoves(int n) {
 
 int Board::alphabetaMax(int depth, int alpha, int beta) {
     if (depth == 0)
-        //return quiesce(alpha, beta);
-        return current.heurVal();
+        return quiesce(alpha, beta);
+        //return current.heurVal();
     
     for(const auto& m : current.legalMoves()) {
         current.move(m);
@@ -62,8 +68,8 @@ int Board::alphabetaMax(int depth, int alpha, int beta) {
 
 int Board::alphabetaMin(int depth, int alpha, int beta) {
     if (depth == 0)
-        //return -quiesce(alpha, beta);
-        return current.heurVal();
+        return -quiesce(alpha, beta);
+        //return current.heurVal();
     
     for(const auto& m : current.legalMoves()) {
         current.move(m);
@@ -119,20 +125,14 @@ bool Board::isQuiet() {
 }
 
 int Board::perft(int n) {
-    if (n == 0) {
-        return 1;
+    if (n == 1) {
+        return current.legalMoves().size();
     } else {
         int sum = 0;
-        for (int i = 0; i < 12; ++i) {
-            if ((i <= 5 && current.turn == true) ||
-                (i >= 6 && current.turn == false)) continue;
-            for (auto& square : bbToSquares(current.thePosition.at(i))) {
-                for (auto& m : current.validMoves(i, square)) {
-                    move(m);
-                    sum += perft(n - 1);
-                    unmove();
-                }
-            }
+        for (const auto& i : current.legalMoves()) {
+            move(i);
+            sum += perft(n - 1);
+            unmove();
         }
         return sum;
     }
@@ -140,22 +140,15 @@ int Board::perft(int n) {
 
 void Board::perftDivide(int n) {
     if (n == 1) {
-        const auto& x = current.legalMoves();
-        for (auto& i : x) {
+        for (const auto& i : current.legalMoves()) {
             std::cout << i << '\n';
         }
         return;
     }
-    for (int i = 0; i < 12; ++i) {
-        if ((i <= 5 && current.turn == true) ||
-            (i >= 6 && current.turn == false)) continue;
-        for (auto& square : bbToSquares(current.thePosition.at(i))) {
-            for (auto& m : current.validMoves(i, square)) {
-                move(m);
-                std::cout << m << " " << perft(n - 1) << '\n';
-                unmove();
-            }
-        }
+    for (const auto& i : current.legalMoves()) {
+        move(i);
+        std::cout << i << " : " << perft(n - 1) << std::endl;
+        unmove();
     }
 }
 
