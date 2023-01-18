@@ -779,7 +779,8 @@ void Position::resetOriginal() {
 
 int Position::materialCount() const {
     int val[12] = {
-        100 , 300 , 300 , 500 , 900 , 0,
+    //  P     N     B     R     Q     K
+         100,  300,  300,  500,  900, 0,
         -100, -300, -300, -500, -900, 0
     };
     
@@ -787,12 +788,25 @@ int Position::materialCount() const {
     for (int i = 0; i < 11; ++i) {
         if (i == 5)
             continue;
-        value += val[i] * __builtin_popcount(thePosition.at(i));
+        value += val[i] * __builtin_popcountll(thePosition.at(i));
     }
     return value;
 }
 
-int Position::heurVal() const {
+// assigns a value based on the pawnStructure
+int Position::pawnStructure(Colour c) const {
+    U64 board = thePosition.at(c);
+}
+
+int isolatedPawns(U64 board) {
+
+}
+
+int Position::heurVal() {
+    if (whiteInCheckmate())
+        return -100000;
+    if (blackInCheckmate())
+        return 100000;
     return materialCount();
 }
 

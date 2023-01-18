@@ -144,13 +144,14 @@ class Position {
     // P/p = 100, N/n = 300, B/b = 300, R/r = 500, Q/q = 900
     // returns the material difference (positive = white, negative = black)
     int materialCount() const;
+    int pawnStructure(Colour c) const;
     // get the heuristical value of a position
   public:
     // currently returns materialCount(), ideas to extend
     // by examining pawn structure (connectedness, doubledness)
     // also can tie to pressure imbalance detector
     // and synergy with bishop (good/bad bishop)
-    int heurVal() const;
+    int heurVal();
 
 
     friend std::ostream& operator<<(std::ostream& out, const Position& pos);

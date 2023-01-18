@@ -21,7 +21,6 @@ Key randomKey() {
 }
 
 void initZobristTables() {
-    std::unordered_map<Position, TTInfo, ZHash> transTable;
     for (int i = 0; i <= 11; ++i)
         for (int j = 0; j < 64; ++j)
             Zobrist::table[i][j] = randomKey();
@@ -69,5 +68,7 @@ TTInfo& at(const Position& p) {
         return transTable.at(p);
     }
 }
+
+std::unordered_map<Position, TTInfo, ZHash> transTable;
 
 }

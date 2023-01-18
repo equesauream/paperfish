@@ -6,6 +6,7 @@
 #include "position.h"
 #include "table.h"
 #include "move.h"
+#include "magic.h"
 
 using namespace engine;
 
@@ -22,6 +23,7 @@ std::string spaceSplit(std::string& line) {
 }
 
 int main() {
+    magic::initMagics();
     initZobristTables();
     std::string flag;
     
@@ -117,23 +119,25 @@ int main() {
                 // search until the "stop" command
 
                 continue;
-            } /*else if (next == "perft") {
+            } else if (next == "perft") {
                 int n = spaceSplit(line).at(0) - '0';
                 std::cout << n << '\n';
                 std::cout << game.perft(n) << std::endl;
                 continue;
-            }*/
+            }
 
-            //game.searchMoves(4);
-            std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
+            game.searchMoves(4);
+            std::cout << "bestmove " << transTable.at(game.current).bestMove << '\n';
+            //std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
         } else if (first == "stop") {
             // stop calculating
             if (flag == "searchmoves") {
-                //game.searchMoves(4);
-                std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
+                game.searchMoves(5);
+                std::cout << "bestmove " << transTable.at(game.current).bestMove << '\n';
                 flag = "";
             } else if (flag == "infinite") {
-                std::cout << "bestmove " << game.current.legalMoves().at(0) << '\n';
+                game.searchMoves(5);
+                std::cout << "bestmove " << transTable.at(game.current).bestMove << '\n';
                 flag = "";
             }
         } else if (first == "ponderhit") {

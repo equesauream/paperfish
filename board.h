@@ -43,6 +43,8 @@ class Board {
     // to extend to pressure imbalance detector
     bool isQuiet();
 
+    int alphabeta(int depth, int alpha, int beta, bool maximizingPlayer);
+
     // alpha-beta search
     int alphabetaMax(int depth, int alpha, int beta);
     int alphabetaMin(int depth, int alpha, int beta);

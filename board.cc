@@ -3,6 +3,8 @@
 #include "move.h"
 #include "table.h"
 
+#include <algorithm>
+
 namespace engine {
 
 Board::Board() {}
@@ -35,24 +37,61 @@ void Board::searchmove(const Move& m, int n) {
 
 // search n moves or until quiet
 void Board::searchMoves(int n) {
-    Move best;
-    int bestScore = -100000;
+    // constant to track side
+    int c = current.turn == White ? 1 : -1;
+
+    Move best = current.legalMoves().at(0);
+    int bestScore = -100001;
     for (const auto& m : current.legalMoves()) {
         move(m);
-        int score = alphabetaMax(n, -100000, 100000);
+        int score;
+        score = c * alphabeta(n - 1, -100000, 100000, !current.turn);
         if (score > bestScore) {
             best = m;
             bestScore = score;
-        }
+        }    
         unmove();
     }
-    at(current) = TTInfo(best, bestScore, n);
+    transTable[current] = TTInfo(best, c * bestScore, n);
 }
 
+// returns objective score of the position
+// i.e. + for white is winning
+//      - for black is winning
+
+int Board::alphabeta(int depth, int alpha, int beta, bool maximizingPlayer) {
+    if (depth == 0)
+        return current.heurVal();
+    if (maximizingPlayer) {
+        int value = -100000;
+        for (const auto& m : current.legalMoves()) {
+            move(m);
+            value = std::max(value, alphabeta(depth - 1, alpha, beta, false));
+            unmove();
+            if (value > beta) 
+                break;
+            alpha = std::max(alpha, value);
+        }
+        return value;
+    } else {
+        int value = 100000;
+        for (const auto& m : current.legalMoves()) {
+            move(m);
+            value = std::min(value, alphabeta(depth - 1, alpha, beta, true));
+            unmove();
+            if (value < alpha)
+                break;
+            beta = std::min(beta, value);
+        }
+        return value;
+    }
+}
+
+// optimizes alpha
 int Board::alphabetaMax(int depth, int alpha, int beta) {
     if (depth == 0)
-        return quiesce(alpha, beta);
-        //return current.heurVal();
+        //return quiesce(alpha, beta);
+        return current.heurVal();
     
     for(const auto& m : current.legalMoves()) {
         current.move(m);
@@ -66,10 +105,11 @@ int Board::alphabetaMax(int depth, int alpha, int beta) {
     return alpha;
 }
 
+// optimizes beta
 int Board::alphabetaMin(int depth, int alpha, int beta) {
     if (depth == 0)
-        return -quiesce(alpha, beta);
-        //return current.heurVal();
+        //return -quiesce(alpha, beta);
+        return -current.heurVal();
     
     for(const auto& m : current.legalMoves()) {
         current.move(m);

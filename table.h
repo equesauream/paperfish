@@ -27,7 +27,7 @@ struct ZHash {
 
 TTInfo& at(const Position& p);
 
-inline std::unordered_map<Position, TTInfo, ZHash> transTable;
+extern std::unordered_map<Position, TTInfo, ZHash> transTable;
 
 }
 
