@@ -417,7 +417,7 @@ void initBishopTable() {
 // initialize pawn attacks
 void initPawnAttacks() {
     // white pawn
-    for (int i = 8; i < 56; ++i) {
+    for (int i = 0; i < 64; ++i) {
         Square pos = getSquare(i);
         Square tmp = 0;
         if (rowNumber(pos) == 2 && colNumber(pos) < H && colNumber(pos) > A) {
@@ -443,17 +443,14 @@ void initPawnAttacks() {
         } else if (rowNumber(pos) == 7 && colNumber(pos) == H) {
             tmp |= (pos >> 8 ) |
                    (pos >> 9 );
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) < H && colNumber(pos) > A) {
+        } else if (colNumber(pos) < H && colNumber(pos) > A) {
             tmp |= (pos >> 8 ) | 
                    (pos >> 7 ) |
                    (pos >> 9 );
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) == H) {
+        } else if (colNumber(pos) == H) {
             tmp |= (pos >> 8 ) |
                    (pos >> 9 );
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) == A) {
+        } else if (colNumber(pos) == A) {
             tmp |= (pos >> 8 ) | 
                    (pos >> 7 );
         }
@@ -461,7 +458,7 @@ void initPawnAttacks() {
     }
 
     // black pawn
-    for (int i = 8; i < 56; ++i) {
+    for (int i = 0; i < 64; ++i) {
         Square pos = getSquare(i);
         Square tmp = 0;
         if (rowNumber(pos) == 7 && colNumber(pos) < H && colNumber(pos) > A) {
@@ -487,17 +484,14 @@ void initPawnAttacks() {
         } else if (rowNumber(pos) == 2 && colNumber(pos) == H) {
             tmp |= (pos << 8 ) | 
                    (pos << 7 );
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) < H && colNumber(pos) > A) {
+        } else if (colNumber(pos) < H && colNumber(pos) > A) {
             tmp |= (pos << 8 ) | 
                    (pos << 7 ) |
                    (pos << 9 );
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) == H) {
+        } else if (colNumber(pos) == H) {
             tmp |= (pos << 8 ) | 
                    (pos << 7 );
-        } else if (rowNumber(pos) <= 6 && rowNumber(pos) >= 3 && 
-                    colNumber(pos) == A) {
+        } else if (colNumber(pos) == A) {
             tmp |= (pos << 8 ) | 
                    (pos << 9 );
         }
@@ -629,6 +623,32 @@ U64 getAttacks(Piece p, Square s, U64 blockers) {
         return getAttacks(whiteBishop, s, blockers) | getAttacks(whiteRook, s, blockers);
 
     std::cout << "invalid piece: given piece " << p << '\n';
+    return 0;
+}
+
+U64 getChecks(Piece p, Square s, U64 blockers) {
+    if (isKnight(p) | isBishop(p) | isRook(p) | isQueen(p))
+        return getAttacks(p, s, blockers);
+
+    if (isPawn(p)) {
+        U64 checks = getAttacks(p, s, blockers);
+        if (p == blackPawn) {
+            return checks & ~(s << 8) & ~(s << 16);
+        } else {
+            return checks & ~(s >> 8) & ~(s >> 16);
+        }
+    }
+
+    if (isKing(p)) {
+        U64 checks = getAttacks(p, s, blockers);
+        if (p == blackKing) {
+            if (s == E8) return checks & ~G8 & ~C8;
+            else return checks;
+        } else {
+            if (s == E1) return checks & ~G1 & ~C1;
+            else return checks;
+        }
+    }
     return 0;
 }
 

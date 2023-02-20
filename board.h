@@ -5,6 +5,7 @@
 
 #include "move.h"
 #include "position.h"
+#include "time.h"
 
 using U64 = unsigned long long;
 using Key = unsigned long long;
@@ -12,9 +13,24 @@ using Key = unsigned long long;
 namespace engine {
 
 class Board {
+  enum gameResult {
+    whiteWin,
+    blackWin,
+    draw,
+  };
+
   public:
     Position current;
     std::vector<Position> history;
+
+    bool gameOver = false;
+    gameResult gameRes = draw;
+
+  private:
+    std::unordered_map<Position, size_t, ZHash> seenPositions;
+    size_t fiftyMove = 0;
+
+
   public:
     Board();
     Board(const std::string& FEN);
@@ -27,6 +43,8 @@ class Board {
     void searchMoves(int n);
 
     void searchmove(const Move& m, int n);
+
+    void searchWithTime(Time t);
 
     // quiescence search
     int quiesce(int alpha, int beta);

@@ -22,6 +22,27 @@ void Board::move(const Move& m) {
     newBoard.move(m);
     newBoard.resetOriginal();
     current = newBoard;
+    if (seenPositions.count(current)) {
+        ++seenPositions[current];
+    } else {
+        seenPositions[current] = 0;
+    }
+
+    if (seenPositions[current] == 3) {
+        gameOver = true;
+        gameRes = draw;
+    }
+
+    if (m.type == Capture || isPawn(m.piece)) {
+        fiftyMove = 0;
+    } else {
+        ++fiftyMove;
+    }
+    
+    if (fiftyMove == 50) {
+        gameOver = true;
+        gameRes = draw;
+    }
 }
 
 void Board::unmove() {
@@ -53,6 +74,24 @@ void Board::searchMoves(int n) {
         unmove();
     }
     transTable[current] = TTInfo(best, c * bestScore, n);
+}
+
+// using <time.h>: clock()
+void Board::searchWithTime(Time t) {
+    int n = 3; // number of ply to search
+    clock_t startTime = clock();
+    while (t.remainingTime > 0 ) {
+        for (const auto& m : current.legalMoves()) {
+            clock_t elapsedTime = clock() - startTime;
+            t.remainingTime -= elapsedTime;
+            if (t.remainingTime <= 0)
+                break;
+            searchmove(m, n);
+        }
+        ++n;
+        clock_t elapsedTime = clock() - startTime;
+        t.remainingTime -= elapsedTime;
+    }
 }
 
 // returns objective score of the position

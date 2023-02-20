@@ -34,6 +34,7 @@ void printBitboard(U64 b);
 std::vector<U64> generateBlockers(U64 bits);
 // blockers will be the union of whitePieces' and blackPieces' positions
 U64 getAttacks(Piece p, Square s, U64 blockers);
+U64 getChecks(Piece p, Square s, U64 blockers);
 
 }
 

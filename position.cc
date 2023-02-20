@@ -325,6 +325,7 @@ Move Position::parseString(std::string s) {
     for (int i = 0; i < 12; ++i) {
         if (thePosition.at(i) & r) {
             p = i;
+            break;
         }
     }
 
@@ -675,35 +676,17 @@ void Position::advance(const Move& m) {
 
 bool Position::whiteInCheck() {
 
-    U64 cpy = thePosition.at(blackPawn);
-    while (cpy != 0) {
-        Square pawn = cpy & (~cpy + 1);
-        if (colNumber(pawn) == A) {
-            if (thePosition.at(whiteKing) & (pawn << 9))
-                return true;
-        } else if (colNumber(pawn) == H) {
-            if (thePosition.at(whiteKing) & (pawn << 7))
-                return true;
-        } else {
-            if (thePosition.at(whiteKing) & (pawn << 7) || 
-                thePosition.at(whiteKing) & (pawn << 9))
-                return true;
-        }
-
-        cpy &= cpy - 1;
+    if (thePosition.at(whiteKing) == 0) {
+        std::cout << '\n' << *this;
+        std::cout << "white king not in position" << '\n';
     }
+    if (magic::getChecks(whitePawn, thePosition.at(whiteKing), whitePieces | blackPieces) & thePosition.at(blackPawn))
+        return true;
 
-    // for bishop, knight, rook, queen, place that piece on the king square and check if they can attack
-    // its respective piece. e.g. if the white king is on E1, place a black bishop on E1 and check if 
-    // that black bishop can attack any actual black bishops
-    for (int i = 7; i <= 10; ++i) {
-        if (magic::getAttacks(i, thePosition.at(whiteKing), whitePieces | blackPieces) & thePosition.at(i))
+    for (int i = blackKnight; i <= blackKing; ++i) {
+        if (magic::getChecks(i, thePosition.at(whiteKing), whitePieces | blackPieces) & thePosition.at(i))
             return true;
     }
-
-    if (magic::getAttacks(blackKing, thePosition.at(whiteKing), whitePieces | blackPieces) & 
-        thePosition.at(blackKing) & ~G8 & ~C8)
-        return true;
 
     return false;
 }
@@ -711,38 +694,17 @@ bool Position::whiteInCheck() {
 bool Position::blackInCheck() {
 
     if (thePosition.at(blackKing) == 0) {
+        std::cout << '\n' << *this;
         std::cout << "black king not in position" << '\n';
     }
 
-    U64 cpy = thePosition.at(whitePawn);
-    while (cpy != 0) {
-        Square pawn = cpy & (~cpy + 1);
-        if (colNumber(pawn) == A) {
-            if (thePosition.at(blackKing) & (pawn >> 7))
-                return true;
-        } else if (colNumber(pawn) == H) {
-            if (thePosition.at(blackKing) & (pawn >> 9))
-                return true;
-        } else {
-            if (thePosition.at(blackKing) & (pawn >> 9) || 
-                thePosition.at(blackKing) & (pawn >> 7))
-                return true;
-        }
+    if (magic::getChecks(blackPawn, thePosition.at(blackKing), whitePieces | blackPieces) & thePosition.at(whitePawn))
+        return true;
 
-        cpy &= cpy - 1;
-    }
-
-    // for bishop, knight, rook, queen, place that piece on the king square and check if they can attack
-    // its respective piece. e.g. if the white king is on E1, place a black bishop on E1 and check if 
-    // that black bishop can attack any actual black bishops
-    for (int i = 1; i <= 4; ++i) {
-        if (magic::getAttacks(i, thePosition.at(blackKing), whitePieces | blackPieces) & thePosition.at(i))
+    for (int i = whiteKnight; i <= whiteKing; ++i) {
+        if (magic::getChecks(i, thePosition.at(blackKing), whitePieces | blackPieces) & thePosition.at(i))
             return true;
     }
-
-    if (magic::getAttacks(whiteKing, thePosition.at(blackKing), whitePieces | blackPieces) 
-        & thePosition.at(whiteKing) & ~G1 & ~C1)
-        return true;
 
     return false;
 }
@@ -778,10 +740,11 @@ void Position::resetOriginal() {
 }
 
 int Position::materialCount() const {
+    int closedness = Position::closedness();
     int val[12] = {
-    //  P     N     B     R     Q     K
-         100,  300,  300,  500,  900, 0,
-        -100, -300, -300, -500, -900, 0
+    //  P     N     B                      R      Q      K
+         200,  600,  600 + 10 * closedness,  1000,  1800, 0,
+        -200, -600, -600 - 10 * closedness, -1000, -1800, 0
     };
     
     int value = 0;
@@ -793,13 +756,119 @@ int Position::materialCount() const {
     return value;
 }
 
-// assigns a value based on the pawnStructure
 int Position::pawnStructure(Colour c) const {
-    U64 board = thePosition.at(c);
+    int con = c == White ? 1 : -1;
+    int pawn = c == White ? whitePawn : blackPawn;
+    return con * 2 * (pawnSupport(thePosition.at(pawn), c) - isolatedPawns(thePosition.at(pawn)));
 }
 
-int isolatedPawns(U64 board) {
 
+// counts the number of pawns protected by other pawns
+int Position::pawnSupport(U64 board, Colour c) {
+    U64 cpy = board;
+    int pawnSupp = 0;
+    while (cpy != 0) {
+        Square s = cpy & (~cpy + 1);
+        pawnSupp += __builtin_popcountll(board | magic::getChecks(c == whitePawn ? whitePawn : blackPawn, s, 0));
+        cpy ^= s;
+    }
+    return pawnSupp;
+}
+
+// counts the number of isolated pawns
+int Position::isolatedPawns(U64 board) {
+    U64 cpy = board;
+    int isoPawn = 0;
+    while (cpy != 0) {
+        Square s = cpy & (~cpy + 1);
+        U64 nextFiles = 0;
+        if (colNumber(s) != A) {
+            Square cur = s >> 1;
+            Square end = 0x000000ff;
+            while ((cur & end) == 0) {
+                nextFiles |= cur;
+                cur >>= 8;
+            }
+            cur = s >> 1;
+            end = 0xff'00'00'00'00'00'00'00;
+            while ((cur & end) == 0) {
+                nextFiles |= cur;
+                cur <<= 8;
+            }
+        }
+        if (colNumber(s) != H) {
+            Square cur = s << 1;
+            Square end = 0x000000ff;
+            while ((cur & end) == 0) {
+                nextFiles |= cur;
+                cur >>= 8;
+            }
+            cur = s << 1;
+            end = 0xff'00'00'00'00'00'00'00;
+            while ((cur & end) == 0) {
+                nextFiles |= cur;
+                cur <<= 8;
+            }
+        }
+        if ((nextFiles & board) == 0) {
+            ++isoPawn;
+        }
+
+        cpy ^= s;
+    }
+    return isoPawn;
+}
+
+int Position::closedness() const {
+    return __builtin_popcountll(thePosition.at(whitePawn) & (thePosition.at(blackPawn) << 8));
+}
+
+int pressureHeatMap[64] = {
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 2, 2, 2, 2, 2, 2, 1,
+    1, 2, 3, 3, 3, 3, 2, 1,
+    1, 2, 3, 4, 4, 3, 2, 1,
+    1, 2, 3, 4, 4, 3, 2, 1,
+    1, 2, 3, 3, 3, 3, 2, 1,
+    1, 2, 2, 2, 2, 2, 2, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+};
+
+// counts the number of times each square is hit, and returns the weighted sum based on the heat map
+int Position::pressure() const {
+    
+    int pressureBoard[64] = {
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0
+    };
+    for (int i = 0; i <= 5; ++i) {
+        U64 cpy = thePosition.at(i);
+        while (cpy != 0) {
+            int s = __builtin_ctzll(cpy);
+            pressureBoard[s] += pressureHeatMap[s];
+            cpy &= cpy - 1;
+        }
+    }
+    for (int i = 6; i <= 11; ++i) {
+        U64 cpy = thePosition.at(i);
+        while (cpy != 0) {
+            int s = __builtin_ctzll(cpy);
+            pressureBoard[s] -= pressureHeatMap[s];
+            cpy &= cpy - 1;
+        }
+    }
+    int total = 0;
+    for (int i = 0; i < 64; ++i) 
+        total += 2 * pressureBoard[i];
+
+    
+    return total / 2;
 }
 
 int Position::heurVal() {
@@ -807,7 +876,12 @@ int Position::heurVal() {
         return -100000;
     if (blackInCheckmate())
         return 100000;
-    return materialCount();
+
+    return 
+    materialCount() 
+    + pawnStructure(White) - pawnStructure(Black) 
+    + 5 * whiteInCheck() - 5 * blackInCheck()
+    + pressure();
 }
 
 }

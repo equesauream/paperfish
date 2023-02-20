@@ -140,12 +140,23 @@ class Position {
     bool whiteInCheckmate();
     bool blackInCheckmate();
 
+
+
+    // Heurisitcs //
     
     // P/p = 100, N/n = 300, B/b = 300, R/r = 500, Q/q = 900
     // returns the material difference (positive = white, negative = black)
     int materialCount() const;
     int pawnStructure(Colour c) const;
+
+    static int isolatedPawns(U64 board);
+    static int pawnSupport(U64 board, Colour c);
+    // on a scale of 0 to 7, rate the closedness of the position
+    // based on pawn structure
+    int closedness() const;
     // get the heuristical value of a position
+
+    int pressure() const;
   public:
     // currently returns materialCount(), ideas to extend
     // by examining pawn structure (connectedness, doubledness)

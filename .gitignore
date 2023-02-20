@@ -1,7 +1,7 @@
 *.d
 *.o
-main
+main*
 .vscode/
 LichessBot/
 *.out
-gmon.out
+*.sh
