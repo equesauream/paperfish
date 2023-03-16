@@ -1,20 +1,11 @@
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include "board.h"
-#include "position.h"
-#include "table.h"
-#include "move.h"
 #include "magic.h"
+#include "table.h"
 #include "uci.h"
 
-using namespace engine;
-
 int main() {
-    magic::initMagics();
-    initZobristTables();
-    UCI p;
+    engine::magic::initMagics();
+    engine::initZobristTables();
+    engine::UCI p;
     p.play();
     return 0;
 }

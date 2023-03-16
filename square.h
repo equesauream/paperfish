@@ -1,14 +1,7 @@
 #ifndef SQUARE_H
 #define SQUARE_H
 
-#include <vector>
-#include <string>
-
-using U64 = unsigned long long;
-using Square = unsigned long long;
-using Col = int;
-using Colour = bool;
-using SquareIndex = uint8_t;
+#include "type.h"
 
 namespace engine {
 

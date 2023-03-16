@@ -1,10 +1,7 @@
-#include <unordered_map>
-#include <iostream>
-#include <vector>
-
 #include "magic.h"
 #include "square.h"
 #include "piece.h"
+#include "type.h"
 
 namespace engine {
 

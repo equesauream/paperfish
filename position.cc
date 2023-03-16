@@ -3,12 +3,9 @@
 #include "piece.h"
 #include "table.h"
 #include "magic.h"
+#include "type.h"
 
-#include <sstream>
-#include <bitset>
-#include <cctype>
-#include <iostream>
-#include <random>
+#include <memory>
 
 namespace engine {
 
@@ -118,6 +115,8 @@ Position::Position(const std::string& FEN) {
     OenPassant = enPassant;
     OhalfMove = halfMove;
     OfullMove = fullMove;
+
+    Okey = key;
 }
 
 Position::Position(const Position& other) :
@@ -139,7 +138,10 @@ Position::Position(const Position& other) :
     OcastleRights {other.OcastleRights},
     OenPassant {other.OenPassant},
     OhalfMove {other.OhalfMove},
-    OfullMove {other.OfullMove}
+    OfullMove {other.OfullMove},
+
+    key {other.key},
+    Okey {other.Okey}
 {}
 
 Position::Position(const Position&& other) : 
@@ -161,7 +163,10 @@ Position::Position(const Position&& other) :
     OcastleRights {other.OcastleRights},
     OenPassant {other.OenPassant},
     OhalfMove {other.OhalfMove},
-    OfullMove {other.OfullMove}
+    OfullMove {other.OfullMove},
+
+    key {other.key},
+    Okey {other.Okey}
 {}
 
 Position& Position::operator=(Position other) {
@@ -184,6 +189,9 @@ Position& Position::operator=(Position other) {
     OenPassant = std::move(other.OenPassant);
     OhalfMove = std::move(other.OhalfMove);
     OfullMove = std::move(other.OfullMove);
+
+    key = std::move(other.key);
+    Okey = std::move(other.Okey);
     return *this;
 }
 
@@ -524,20 +532,6 @@ bool Position::isValidMove(const Move& m, Piece piece) {
 } // isValidMove
 
 // pos is a square, e.g. "e4"
-std::vector<Move> Position::validMoves(Piece p, Square pos) {
-    std::vector<Move> tmp;
-    auto moves = possibleMoves(p, pos);
-    tmp.reserve(moves.size());
-    for (const auto& i : moves) {
-        if (isValid(i)) {
-            tmp.push_back(i);
-        }
-    }
-    //tmp.shrink_to_fit();
-    return tmp;
-}
-
-// pos is a square, e.g. "e4"
 std::vector<Move> Position::possibleMoves(Piece p, Square pos) const {
     U64 magic = magic::getAttacks(p, pos, whitePieces | blackPieces);
     std::vector<Move> tmp;
@@ -568,7 +562,7 @@ std::vector<Move> Position::possibleMoves(Piece p, Square pos) const {
 
 std::vector<Move> Position::legalMoves() {
     std::vector<Move> tmp;
-    tmp.reserve(100);
+    tmp.reserve(50);
     int start, end;
     if (turn == Black) {
         start = 6;
@@ -581,8 +575,11 @@ std::vector<Move> Position::legalMoves() {
         U64 cpy = thePosition.at(i);
         while (cpy != 0) {
             Square s = cpy & (~cpy + 1);
-            for (const auto& j : validMoves(i, s)) {
-                tmp.push_back(j);
+            const auto moves = possibleMoves(i, s);
+            for (const auto& j : moves) {
+                if (isValid(j)) {
+                    tmp.push_back(j);
+                }
             }
             cpy ^= s;
         }
@@ -592,58 +589,85 @@ std::vector<Move> Position::legalMoves() {
 }
 
 void Position::move(const Move& m) {
+
+    key ^= Zobrist::blackToMove;
+
     Square s = getSquare(m.source);
     Square d = getSquare(m.dest);
+
     // set the source bit to 0
     thePosition.at(m.piece) ^= s;
+    key ^= Zobrist::table[m.piece][m.source];
     
     // set all destination bits to 0
     if (m.type == Capture) {
-        for (auto& board : thePosition) {
-            board &= ~d;
+        for (int board = 0; board < 12; ++board) {
+            if ((thePosition[board] & d) != 0) {
+                thePosition[board] &= ~d;
+                key ^= Zobrist::table[board][m.dest];
+            }
         }
     }
 
     // set the destination bit of the moving piece to 1
     thePosition.at(m.piece) |= d;
+    key ^= Zobrist::table[m.piece][m.dest];
 
     // if promotion
     if (m.promotionPiece != NoPiece) {
         // set the destination square of the pawn to 0
         thePosition.at(m.piece) ^= d;
+        key ^= Zobrist::table[m.piece][m.dest];
 
         thePosition.at(m.promotionPiece) |= d;
+        key ^= Zobrist::table[m.promotionPiece][m.dest];
     }
 
     // if castle
     if (m.piece == whiteKing && m.type == ShortCastle) {
         thePosition.at(whiteRook) ^= H1;
         thePosition.at(whiteRook) |= F1;
+
+        key ^= Zobrist::table[whiteRook][getSquareIndex(H1)];
+        key ^= Zobrist::table[whiteRook][getSquareIndex(F1)];
     } else if (m.piece == whiteKing && m.type == LongCastle) {
         thePosition.at(whiteRook) ^= A1;
         thePosition.at(whiteRook) |= D1;
+
+        key ^= Zobrist::table[whiteRook][getSquareIndex(A1)];
+        key ^= Zobrist::table[whiteRook][getSquareIndex(D1)];
     } else if (m.piece == blackKing && m.type == ShortCastle) {
         thePosition.at(blackRook) ^= H8;
         thePosition.at(blackRook) |= F8;
+
+        key ^= Zobrist::table[blackRook][getSquareIndex(H8)];
+        key ^= Zobrist::table[blackRook][getSquareIndex(F8)];
     } else if (m.piece == blackKing && m.type == LongCastle) {
         thePosition.at(blackRook) ^= A8;
         thePosition.at(blackRook) |= D8;
+
+        key ^= Zobrist::table[blackRook][getSquareIndex(A8)];
+        key ^= Zobrist::table[blackRook][getSquareIndex(D8)];
     }
 
     // if en passent
     if (m.piece == whitePawn && d == enPassant) {
         thePosition.at(blackPawn) ^= (d << 8);
+        key ^= Zobrist::table[blackPawn][m.dest - 8];
     } else if (m.piece == blackPawn && d == enPassant) {
         thePosition.at(whitePawn) ^= (d >> 8);
+        key ^= Zobrist::table[whitePawn][m.dest + 8];
     }
 
     turn = !turn;
     enPassant = getSquare(m.enPassantSquare);
+    key ^= Zobrist::castling[castleRights];
     for (int i = 0; i < 4; ++i) {
         if ((m.castleRights & (uint8_t) (1 << i)) == 0) {
             castleRights ^= (uint8_t) (1 << i);
         }
     }
+    key ^= Zobrist::castling[castleRights];
 
     updateBoards();
     // if capture or pawn move
@@ -667,6 +691,8 @@ void Position::unmove() {
     enPassant    = OenPassant;
     halfMove     = OhalfMove;
     fullMove     = OfullMove;
+
+    key          = Okey;
 }
 
 void Position::advance(const Move& m) {
@@ -737,6 +763,8 @@ void Position::resetOriginal() {
     OenPassant    = enPassant;
     OhalfMove     = halfMove;
     OfullMove     = fullMove;
+
+    Okey          = key;
 }
 
 int Position::materialCount() const {

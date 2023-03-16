@@ -1,6 +1,6 @@
-all : main paperfish
+all : main
 
-CXXFLAGS = -std=c++17 -Wall -MMD -Wextra -pedantic -g -Ofast -flto -pg
+CXXFLAGS = -std=c++17 -Wall -MMD -Wextra -pedantic -g -Ofast -flto -pg -lprofiler
 OBJECTS = position.o move.o board.o square.o table.o piece.o magic.o
 DEPENDS = ${OBJECTS:.o=.d}
 

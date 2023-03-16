@@ -1,7 +1,3 @@
-#include <string>
-#include <iostream>
-#include <vector>
-
 #include "square.h"
 
 namespace engine {

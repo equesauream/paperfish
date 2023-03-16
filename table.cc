@@ -1,24 +1,18 @@
-#include <random>
 #include "table.h"
 
 namespace engine {
 
 namespace Zobrist {
-
     Key table[12][64];
     Key enPassant[64];
     Key castling[0b1111 + 1];
     Key blackToMove;
 }
 
+
 std::random_device rd;
 // mersenne twister
 std::mt19937 gen(rd());
-
-Key randomKey() {
-    std::uniform_int_distribution<Key> distrib(0, UINT64_MAX);
-    return distrib(gen);
-}
 
 void initZobristTables() {
     for (int i = 0; i <= 11; ++i)
@@ -70,5 +64,15 @@ TTInfo& at(const Position& p) {
 }
 
 std::unordered_map<Position, TTInfo, ZHash> transTable;
+
+
+unsigned long long rando(unsigned long long n) {
+    std::uniform_int_distribution<unsigned long long> distrib(0, n);
+    return distrib(gen);
+}
+
+Key randomKey() {
+    return rando(UINT64_MAX);
+}
 
 }

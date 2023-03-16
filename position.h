@@ -1,19 +1,10 @@
 #ifndef POSITION_H
 #define POSITION_H
 
-#include <iostream>
-#include <memory>
-#include <vector>
-#include <string>
-#include <map>
-
 #include "move.h"
+#include "type.h"
 
-using U64 = unsigned long long;
-using Square = unsigned long long;
-using Key = unsigned long long;
-using Piece = int;
-using MoveType = uint8_t;
+#include <memory>
 /*
 
 top left = first bit

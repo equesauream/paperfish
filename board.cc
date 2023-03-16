@@ -2,8 +2,7 @@
 #include "position.h"
 #include "move.h"
 #include "table.h"
-
-#include <algorithm>
+#include "type.h"
 
 namespace engine {
 
@@ -22,30 +21,37 @@ void Board::move(const Move& m) {
     newBoard.move(m);
     newBoard.resetOriginal();
     current = newBoard;
-    if (seenPositions.count(current)) {
-        ++seenPositions[current];
-    } else {
-        seenPositions[current] = 0;
-    }
+    /*++seenPositions.at(current.key);
 
-    if (seenPositions[current] == 3) {
+    if (seenPositions[current.key] == 3) {
         gameOver = true;
         gameRes = draw;
-    }
+    }*/
 
     if (m.type == Capture || isPawn(m.piece)) {
         fiftyMove = 0;
     } else {
         ++fiftyMove;
     }
-    
+
     if (fiftyMove == 50) {
         gameOver = true;
         gameRes = draw;
     }
+
+    if (current.whiteInCheckmate()) {
+        gameOver = true;
+        gameRes = blackWin;
+    } else if (current.blackInCheckmate()) {
+        gameOver = true;
+        gameRes = whiteWin;
+    }
+
+
 }
 
 void Board::unmove() {
+    --seenPositions[current.key];
     current = history.back();
     history.pop_back();
 }

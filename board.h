@@ -1,14 +1,11 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <vector>
-
 #include "move.h"
 #include "position.h"
 #include "time.h"
-
-using U64 = unsigned long long;
-using Key = unsigned long long;
+#include "type.h"
+#include "table.h"
 
 namespace engine {
 
@@ -27,7 +24,7 @@ class Board {
     gameResult gameRes = draw;
 
   private:
-    std::unordered_map<Position, size_t, ZHash> seenPositions;
+    std::unordered_map<Key, size_t> seenPositions;
     size_t fiftyMove = 0;
 
 
@@ -38,6 +35,9 @@ class Board {
 
     void move(const Move& m);
     void unmove();
+
+    // monte carlo tree search
+    void mcts(Time t);
 
     // search n ply or until quiescence
     void searchMoves(int n);

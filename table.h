@@ -1,14 +1,18 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include <unordered_map>
-
 #include "move.h"
 #include "position.h"
-
-using Key = unsigned long long;
+#include "type.h"
 
 namespace engine {
+
+namespace Zobrist {
+    extern Key table[12][64];
+    extern Key enPassant[64];
+    extern Key castling[0b1111 + 1];
+    extern Key blackToMove;
+}
 
 struct TTInfo {
     Move bestMove;
@@ -28,6 +32,10 @@ struct ZHash {
 TTInfo& at(const Position& p);
 
 extern std::unordered_map<Position, TTInfo, ZHash> transTable;
+
+unsigned long long rando(unsigned long long n);
+
+Key randomKey();
 
 }
 

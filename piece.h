@@ -1,7 +1,7 @@
 #ifndef PIECE_H
 #define PIECE_H
 
-using Piece = int;
+#include "type.h"
 
 namespace engine {
 

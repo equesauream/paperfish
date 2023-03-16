@@ -18,8 +18,8 @@ int main () {
 
 
   Board b;
-  b.move(Move(E2, E4, whitePawn, Basic));
-  b.move(Move(E7, E5, blackPawn, Basic));
+  //b.move(Move(E2, E4, whitePawn, Basic));
+  //b.move(Move(E7, E5, blackPawn, Basic));
   //Board b("2R5/8/8/4k3/2Q5/7P/5PP1/6K1 b - - 0 1");
   //Board b("r7/5pp1/p7/1p6/2k1p3/P3b3/1PKBq1p1/3R4 w - - 0 1");
   //Board b("5k2/Q7/2p4p/pP3p2/PP1B1P2/P1NP4/2P4P/4R1K1 b - - 0 1");
@@ -33,15 +33,21 @@ int main () {
   //std::cout << b.current.pawnSupport(b.current.thePosition.at(0), White) << '\n';
 
   
-  b.searchMoves(6);
-  std::cout << b.current.heurVal() << '\n';
+  //b.searchMoves(6);
 
-  std::cout << transTable[b.current].bestMove << ": " << transTable[b.current].eval <<'\n';
 
-  return 0;
+  /*for (int i = 0; i < 300; ++i) {
+    int size = b.current.legalMoves().size();
+    if (size > 0) {
+      int r = rando(size - 1);
+      b.move(b.current.legalMoves().at(r));
+    }
+
+  }*/
+
   
-  int k = 5;
-  b.perftDivide(k);
+  int k = 4;
+  //b.perftDivide(k);
   clock_t start_time = clock();
   const auto perft_result = b.perft(k);
   std::cout << perft_result << '\n';

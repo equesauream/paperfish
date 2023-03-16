@@ -1,17 +1,10 @@
 #ifndef MOVE_H
 #define MOVE_H
 
-#include <string>
-#include <vector>
-
 #include "square.h"
 #include "piece.h"
+#include "type.h"
 class Position;
-
-typedef unsigned long long U64;
-using Square = unsigned long long;
-using Piece = int;
-using MoveType = uint8_t;
 
 namespace engine {
 
