@@ -21,12 +21,12 @@ void Board::move(const Move& m) {
     newBoard.move(m);
     newBoard.resetOriginal();
     current = newBoard;
-    /*++seenPositions.at(current.key);
+    ++seenPositions[current.key];
 
     if (seenPositions[current.key] == 3) {
         gameOver = true;
         gameRes = draw;
-    }*/
+    }
 
     if (m.type == Capture || isPawn(m.piece)) {
         fiftyMove = 0;

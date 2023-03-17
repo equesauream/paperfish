@@ -116,10 +116,15 @@ Position::Position(const std::string& FEN) {
     OhalfMove = halfMove;
     OfullMove = fullMove;
 
+    ZHash z;
+    key = z(*this);
     Okey = key;
 }
 
 Position::Position(const Position& other) :
+    key {other.key},
+    Okey {other.Okey},
+
     thePosition {other.thePosition},
     whitePieces {other.whitePieces},
     blackPieces {other.blackPieces},
@@ -138,13 +143,13 @@ Position::Position(const Position& other) :
     OcastleRights {other.OcastleRights},
     OenPassant {other.OenPassant},
     OhalfMove {other.OhalfMove},
-    OfullMove {other.OfullMove},
-
-    key {other.key},
-    Okey {other.Okey}
+    OfullMove {other.OfullMove}
 {}
 
 Position::Position(const Position&& other) : 
+    key {other.key},
+    Okey {other.Okey},
+
     thePosition {other.thePosition},
     whitePieces {other.whitePieces},
     blackPieces {other.blackPieces},
@@ -163,10 +168,7 @@ Position::Position(const Position&& other) :
     OcastleRights {other.OcastleRights},
     OenPassant {other.OenPassant},
     OhalfMove {other.OhalfMove},
-    OfullMove {other.OfullMove},
-
-    key {other.key},
-    Okey {other.Okey}
+    OfullMove {other.OfullMove}
 {}
 
 Position& Position::operator=(Position other) {
@@ -531,7 +533,6 @@ bool Position::isValidMove(const Move& m, Piece piece) {
     return true;
 } // isValidMove
 
-// pos is a square, e.g. "e4"
 std::vector<Move> Position::possibleMoves(Piece p, Square pos) const {
     U64 magic = magic::getAttacks(p, pos, whitePieces | blackPieces);
     std::vector<Move> tmp;
@@ -605,6 +606,7 @@ void Position::move(const Move& m) {
             if ((thePosition[board] & d) != 0) {
                 thePosition[board] &= ~d;
                 key ^= Zobrist::table[board][m.dest];
+                break;
             }
         }
     }

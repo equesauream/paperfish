@@ -30,7 +30,7 @@ void initZobristTables() {
 
 Key ZHash::operator()(const Position& p) const {
     Key h = 0;
-    if (p.turn == 1) {
+    if (p.turn == Black) {
         h ^= Zobrist::blackToMove;
     }
     for (int i = 0; i <= 11; ++i) {
@@ -40,8 +40,7 @@ Key ZHash::operator()(const Position& p) const {
             }
         }
     }
-    if (p.castleRights != 0)
-        h ^= Zobrist::castling[p.castleRights];
+    h ^= Zobrist::castling[p.castleRights];
     if (p.enPassant != NoSquare)
         h ^= Zobrist::enPassant[getSquareIndex(p.enPassant)];
     return h;

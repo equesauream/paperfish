@@ -6,12 +6,14 @@
 #include "magic.h"
 
 #include <time.h>
+#include <bitset>
 
 using namespace engine;
 
 int main () {
 
   magic::initMagics();
+  engine::initZobristTables();
 
   //return 0;
 
@@ -35,18 +37,23 @@ int main () {
   
   //b.searchMoves(6);
 
-
-  /*for (int i = 0; i < 300; ++i) {
+  int c = 0;
+  for (int i = 0; i < 10; ++i) {
+    ZHash z;
+        std::cout << i << " \n" << std::bitset<64>(z(b.current)) << "\n" << std::bitset<64>(b.current.key) << std::endl; 
     int size = b.current.legalMoves().size();
     if (size > 0) {
       int r = rando(size - 1);
       b.move(b.current.legalMoves().at(r));
+      if (z(b.current) != b.current.key) {
+        ++c;
+      }
     }
-
-  }*/
-
+  }
+  std::cout << c << std::endl;
+  return 0;
   
-  int k = 4;
+  int k = 6;
   //b.perftDivide(k);
   clock_t start_time = clock();
   const auto perft_result = b.perft(k);
