@@ -42,21 +42,25 @@ int main () {
     ZHash z;
         std::cout << i << " \n" << std::bitset<64>(z(b.current)) << "\n" << std::bitset<64>(b.current.key) << std::endl; 
     int size = b.current.legalMoves().size();
+    
+    if (z(b.current) != b.current.key) {
+      ++c;
+    }
     if (size > 0) {
       int r = rando(size - 1);
       b.move(b.current.legalMoves().at(r));
-      if (z(b.current) != b.current.key) {
-        ++c;
-      }
     }
   }
-  std::cout << c << std::endl;
+  std::cout << "number of incorrect hashes: " << c << std::endl;
   return 0;
   
+
+/// PERFT TESTING ///
+  Board bb;
   int k = 6;
   //b.perftDivide(k);
   clock_t start_time = clock();
-  const auto perft_result = b.perft(k);
+  const auto perft_result = bb.perft(k);
   std::cout << perft_result << '\n';
   start_time = clock() - start_time;
   const auto elapsed_seconds = ((double) start_time) / CLOCKS_PER_SEC;

@@ -29,14 +29,14 @@ void initZobristTables() {
 }
 
 Key ZHash::operator()(const Position& p) const {
-    Key h = 0;
-    if (p.turn == Black) {
+    Key h = 0ULL;
+    if (p.turn == White) {
         h ^= Zobrist::blackToMove;
     }
-    for (int i = 0; i <= 11; ++i) {
-        for (int j = 0; j <= 63; ++j) {
-            if (p.thePosition.at(i) & (1ULL << j)) {
-                h ^= Zobrist::table[i][j];
+    for (int piece = 0; piece <= 11; ++piece) {
+        for (int place = 0; place <= 63; ++place) {
+            if (p.thePosition.at(piece) & (1ULL << place)) {
+                h ^= Zobrist::table[piece][place];
             }
         }
     }

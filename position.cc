@@ -600,7 +600,7 @@ void Position::move(const Move& m) {
     thePosition.at(m.piece) ^= s;
     key ^= Zobrist::table[m.piece][m.source];
     
-    // set all destination bits to 0
+    // set destination bit to 0
     if (m.type == Capture) {
         for (int board = 0; board < 12; ++board) {
             if ((thePosition[board] & d) != 0) {
